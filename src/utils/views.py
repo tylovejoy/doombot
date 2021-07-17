@@ -1,17 +1,19 @@
 import sys
 from copy import deepcopy
+from logging import getLogger
 from typing import List
 
 import discord
+from internal import constants
 from internal.database import WorldRecords
-from utils.pb_utils import display_record
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
-        from internal import constants
         from internal import constants_bot_test as constants_bot
 else:
     from internal import constants_bot_prod as constants_bot
+
+logger = getLogger(__name__)
 
 
 class Confirm(discord.ui.View):
@@ -135,11 +137,12 @@ class Paginator(discord.ui.View):
 
 
 class Verification(discord.ui.View):
-    def __init__(self, message: discord.Message, bot):
+    def __init__(self, message: discord.Message, bot, author: discord.Member):
         super().__init__(timeout=None)
         self.verify = None
         self.message = message
         self.bot = bot
+        self.author = author
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if not bool(
@@ -155,26 +158,26 @@ class Verification(discord.ui.View):
         label="Verify", style=discord.ButtonStyle.green, custom_id="verify"
     )
     async def verify(self, button: discord.ui.Button, interaction: discord.Interaction):
-        search = await WorldRecords.find_one({"message_id": self.message.message_id})
+        search = await WorldRecords.find_one({"message_id": self.message.id})
         guild = self.bot.get_guild(constants_bot.GUILD_ID)
         hidden_channel = guild.get_channel(constants_bot.HIDDEN_VERIFICATION_CHANNEL)
         try:
             hidden_msg = await hidden_channel.fetch_message(search.hidden_id)
             await hidden_msg.delete()
-        except Exception:
+        except discord.HTTPException:
             pass
 
         search.verified = True
+        self.verify = True
         await search.commit()
-        await self.message.author.send(
-            f"Your submission has been verified by {interaction.user.name}!"
+        author = self.bot.get_user(self.author.id)
+
+        await author.send(
+            f"Your submission has been verified by **{interaction.user.name}**!"
             f"\n```Map Code: {search.code}{constants.NEW_LINE}"
-            f"Level: {search.level}{constants.NEW_LINE}"
-            f"Record: {display_record(search.record)}```"
+            f"Level: {search.level}{constants.NEW_LINE}```"
             f"{self.message.jump_url}"
         )
-        self.clear_items()
-        await interaction.edit_original_message(view=self)
         self.stop()
 
 
