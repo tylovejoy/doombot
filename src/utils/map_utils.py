@@ -41,7 +41,8 @@ async def searchmap(
     if map_type:
         if map_type not in constants.TYPES_OF_MAP:
             await ctx.send(
-                f"{map_type} not in map types. Use `/maptypes` for a list of acceptable map types."
+                f"{map_type} not in map types. Use `/maptypes` for a list of acceptable map types.",
+                delete_after=10,
             )
             return
 
@@ -78,11 +79,13 @@ async def searchmap(
         row += 1
 
     # Displays paginated embeds
-    if row:
+    if row > 1:
         view = Paginator(embeds)
         paginator = await ctx.send(embed=view.formatted_pages[0], view=view)
         await view.wait()
         await paginator.delete()
+    elif row == 1:
+        paginator = await ctx.send(embed=embeds[0])
     else:
         m = await ctx.send(
             f"Nothing exists for {map_name or creator or map_code or map_type}!"
