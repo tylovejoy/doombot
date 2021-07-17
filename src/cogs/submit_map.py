@@ -51,7 +51,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
         self, ctx, map_code=None, map_name=None, map_type=None, creator=None, *, desc=""
     ):
         """Submit a map to database."""
-
+        author = ctx.message.author
         message_cache = [ctx.message]
         if map_code is None or map_name is None or map_type is None or creator is None:
             if any([map_code, map_name, map_type, creator]) and not all(
@@ -159,7 +159,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
 
         embed = await map_submit_embed(submission, "New Map")
 
-        view = Confirm("Submission")
+        view = Confirm("Submission", author)
         confirm = await ctx.send("Is this correct?", embed=embed, view=view)
         # Wait for the View to stop listening for input...
         await view.wait()
@@ -182,6 +182,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
     )
     async def deletemap(self, ctx, map_code):
         """Delete a specific map_code."""
+        author = ctx.message.author
         message_cache = [ctx.message]
         map_code = map_code.upper()
 
@@ -202,7 +203,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
 
         embed = await map_submit_embed(search, "Map Deletion")
 
-        view = Confirm("Deletion")
+        view = Confirm("Deletion", author)
         confirm = await ctx.send("Is this correct?", embed=embed, view=view)
         await view.wait()
         if view.value is None:  # Timed out
@@ -221,6 +222,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
     )
     async def editdesc(self, ctx, map_code, *, desc):
         """Edit a specific map_code's description."""
+        author = ctx.message.author
         message_cache = [ctx.message]
         map_code = map_code.upper()
 
@@ -244,7 +246,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
 
         embed = await map_submit_embed(search, "Edit Map Description")
 
-        view = Confirm("Edit")
+        view = Confirm("Edit", author)
         confirm = await ctx.send("Is this correct?", embed=embed, view=view)
         await view.wait()
         if view.value is None:  # Timed out
@@ -267,6 +269,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
     )
     async def edittypes(self, ctx, map_code, *, map_type):
         """Edit a specific map_code's map_types."""
+        author = ctx.message.author
         message_cache = [ctx.message]
         map_code = map_code.upper()
 
@@ -303,7 +306,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
 
         embed = await map_submit_embed(search, "Edit Map Types")
 
-        view = Confirm("Edit")
+        view = Confirm("Edit", author)
         confirm = await ctx.send("Is this correct?", embed=embed, view=view)
         await view.wait()
         if view.value is None:  # Timed out
@@ -323,6 +326,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
     )
     async def editcode(self, ctx, map_code, new_map_code):
         """Edit a specific map_code's map_code."""
+        author = ctx.message.author
         message_cache = [ctx.message]
         map_code = map_code.upper()
         new_map_code = new_map_code.upper()
@@ -357,7 +361,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
 
         embed = await map_submit_embed(search, "Edit Map Code")
 
-        view = Confirm("Edit")
+        view = Confirm("Edit", author)
         confirm = await ctx.send("Is this correct?", embed=embed, view=view)
         await view.wait()
         if view.value is None:  # Timed out
@@ -378,6 +382,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
     )
     async def editcreator(self, ctx, map_code, creator):
         """Edit a specific map_code's creators."""
+        author = ctx.message.author
         message_cache = [ctx.message]
         map_code = map_code.upper()
 
@@ -401,7 +406,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
 
         embed = await map_submit_embed(search, "Edit Map Creator(s)")
 
-        view = Confirm("Edit")
+        view = Confirm("Edit", author)
         confirm = await ctx.send("Is this correct?", embed=embed, view=view)
         await view.wait()
         if view.value is None:  # Timed out

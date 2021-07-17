@@ -34,7 +34,9 @@ async def searchmap(
 
     """
     # Checks for map_type, if exists
+    author = None
     try:
+        author = ctx.message.author
         await ctx.message.delete()
     except Exception:  # TODO: correct exception?
         pass
@@ -80,12 +82,12 @@ async def searchmap(
 
     # Displays paginated embeds
     if row > 1:
-        view = Paginator(embeds)
+        view = Paginator(embeds, author)
         paginator = await ctx.send(embed=view.formatted_pages[0], view=view)
         await view.wait()
         await paginator.delete()
     elif row == 1:
-        paginator = await ctx.send(embed=embeds[0])
+        await ctx.send(embed=embeds[0], delete_after=120)
     else:
         m = await ctx.send(
             f"Nothing exists for {map_name or creator or map_code or map_type}!"
