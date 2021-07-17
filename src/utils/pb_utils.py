@@ -3,18 +3,17 @@ import datetime
 import re
 
 import discord
-from disputils import BotEmbedPaginator
-from database.MapData import MapData
-import pymongo
-
 import internal.constants as constants
-from database.WorldRecords import WorldRecords
+import pymongo
+from internal.database import MapData, WorldRecords
+from utils.embeds import doom_embed
+from utils.views import Paginator
 
 
 async def boards(ctx, map_code, level, title, query):
     count = 1
     exists = False
-    embed = discord.Embed(title=f"{title}")
+    embed = doom_embed(title=f"{title}")
     async for entry in WorldRecords.find(query).sort("record", 1).limit(10):
         exists = True
         try:
@@ -94,8 +93,8 @@ def format_timedelta(td):
 async def search_all_pbs(ctx, query, name=""):
     # init vars
     row, embeds = 0, []
-
-    embed = discord.Embed(title=name)
+    author = ctx.message.author
+    embed = doom_embed(title=name)
     count = await MapData.count_documents(query)
 
     async for entry in MapData.find(query).sort([("code", pymongo.ASCENDING)]):
@@ -125,9 +124,18 @@ async def search_all_pbs(ctx, query, name=""):
         row += 1
 
     # Displays paginated embeds
-    if row:
-        paginator = BotEmbedPaginator(ctx, embeds)
-        await paginator.run()
+    if row > 1:
+        view = Paginator(embeds, author)
+        paginator = await ctx.send(embed=view.formatted_pages[0], view=view)
+        await view.wait()
+        await paginator.delete()
+    elif row == 1:
+        await ctx.send(embed=embeds[0], delete_after=120)
 
     else:
-        await ctx.send(f"Nothing exists for {name}!")
+        m = await ctx.send(f"Nothing exists for {name}!")
+        await asyncio.sleep(10)
+        try:
+            await m.delete()
+        except Exception:  # TODO: Correct exception?
+            pass
