@@ -5,7 +5,6 @@ from logging import getLogger
 from discord.ext import commands
 from internal.constants import TYPES_OF_MAP
 from internal.database import MapData
-from utils.embeds import doom_embed
 from utils.form import Form
 from utils.map_utils import (
     convert_short_types,
@@ -16,7 +15,7 @@ from utils.map_utils import (
     map_type_check,
 )
 from utils.utilities import delete_messages
-from views.confirm import Confirm
+from utils.views import Confirm
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":

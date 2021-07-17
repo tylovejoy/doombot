@@ -7,6 +7,7 @@ import internal.constants as constants
 import pymongo
 from internal.database import MapData
 from utils.embeds import doom_embed
+from utils.views import Paginator
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -47,7 +48,7 @@ async def searchmap(
     # init vars
     row, embeds = 0, []
 
-    embed = discord.Embed(title=map_name or creator or map_code or map_type)
+    embed = doom_embed(title=map_name or creator or map_code or map_type)
     count = await MapData.count_documents(query)
 
     async for entry in MapData.find(query).sort([("map_name", pymongo.ASCENDING)]):
@@ -61,7 +62,7 @@ async def searchmap(
                 inline=False,
             )
             embeds.append(embed)
-            embed = discord.Embed(title=map_name or creator or map_code or map_type)
+            embed = doom_embed(title=map_name or creator or map_code or map_type)
 
         # Create embed fields for fields 1 thru 9
         elif row % 10 != 0 or row == 0:
@@ -78,16 +79,10 @@ async def searchmap(
 
     # Displays paginated embeds
     if row:
-        # TODO: PAGINATOR BROKEN
-        # paginator = BotEmbedPaginator(ctx, embeds)
-        # await paginator.run()
-        # try:
-        #     if paginator:
-        #         await asyncio.sleep(30)
-        #         await paginator.quit()
-        # except Exception:  # TODO: Correct exception?
-        #     pass
-        pass
+        view = Paginator(embeds)
+        paginator = await ctx.send(embed=view.formatted_pages[0], view=view)
+        await view.wait()
+        await paginator.delete()
     else:
         m = await ctx.send(
             f"Nothing exists for {map_name or creator or map_code or map_type}!"
