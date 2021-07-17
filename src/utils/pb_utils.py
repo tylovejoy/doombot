@@ -137,5 +137,5 @@ async def search_all_pbs(ctx, query, name=""):
         await asyncio.sleep(10)
         try:
             await m.delete()
-        except Exception:  # TODO: Correct exception?
+        except discord.HTTPException:
             pass

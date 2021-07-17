@@ -38,7 +38,7 @@ async def searchmap(
     try:
         author = ctx.message.author
         await ctx.message.delete()
-    except Exception:  # TODO: correct exception?
+    except discord.HTTPException:
         pass
     if map_type:
         if map_type not in constants.TYPES_OF_MAP:
@@ -95,7 +95,7 @@ async def searchmap(
         await asyncio.sleep(10)
         try:
             await m.delete()
-        except Exception:  # TODO: Correct exception?
+        except discord.HTTPException:
             pass
 
 
