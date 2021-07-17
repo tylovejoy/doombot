@@ -18,7 +18,7 @@ async def boards(ctx, map_code, level, title, query):
         exists = True
         try:
             name = discord.utils.find(
-                lambda m: m.id == entry.posted_by, ctx.guild.members
+                lambda mem: mem.id == entry.posted_by, ctx.guild.members
             ).name
         except AttributeError:
             name = entry.name
@@ -32,12 +32,11 @@ async def boards(ctx, map_code, level, title, query):
         )
         count += 1
     if exists:
-        m = await ctx.send(embed=embed)
+        await ctx.send(embed=embed, delete_after=60)
     else:
-        m = await ctx.send(f"No scoreboard for {map_code} level {level.upper()}!")
-    await asyncio.sleep(60)
-    await m.delete()
-    await ctx.message.delete()
+        await ctx.send(
+            f"No scoreboard for {map_code} level {level.upper()}!", delete_after=60
+        )
 
 
 def is_time_format(s):
@@ -133,9 +132,4 @@ async def search_all_pbs(ctx, query, name=""):
         await ctx.send(embed=embeds[0], delete_after=120)
 
     else:
-        m = await ctx.send(f"Nothing exists for {name}!")
-        await asyncio.sleep(10)
-        try:
-            await m.delete()
-        except discord.HTTPException:
-            pass
+        await ctx.send(f"Nothing exists for {name}!", delete_after=10)

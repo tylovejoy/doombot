@@ -137,12 +137,11 @@ class Paginator(discord.ui.View):
 
 
 class Verification(discord.ui.View):
-    def __init__(self, message: discord.Message, bot, author: discord.Member):
+    def __init__(self, message: discord.Message, bot):
         super().__init__(timeout=None)
         self.verify = None
         self.message = message
         self.bot = bot
-        self.author = author
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if not bool(
@@ -170,14 +169,6 @@ class Verification(discord.ui.View):
         search.verified = True
         self.verify = True
         await search.commit()
-        author = self.bot.get_user(self.author.id)
-
-        await author.send(
-            f"Your submission has been verified by **{interaction.user.name}**!"
-            f"\n```Map Code: {search.code}{constants.NEW_LINE}"
-            f"Level: {search.level}{constants.NEW_LINE}```"
-            f"{self.message.jump_url}"
-        )
         self.stop()
 
 

@@ -208,7 +208,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
                                 await ctx.channel.send(
                                     f"Your rank is {rank + 1} on the unverified scoreboard."
                                 )
-                verify = Verification(msg, self.bot, ctx.message.author)
+                verify = Verification(msg, self.bot)
                 await ctx.message.delete()
                 await msg.edit(content="Waiting to be verified...", view=verify)
                 await verify.wait()
