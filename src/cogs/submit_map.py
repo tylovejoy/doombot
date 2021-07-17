@@ -1,18 +1,19 @@
 import asyncio
 import sys
 from logging import getLogger
+
 from discord.ext import commands
 from internal.constants import TYPES_OF_MAP
 from internal.database import MapData
 from utils.embeds import doom_embed
 from utils.form import Form
 from utils.map_utils import (
-    map_code_regex,
-    map_name_converter,
-    map_type_check,
     convert_short_types,
+    map_code_regex,
+    map_edit_checks,
+    map_name_converter,
     map_submit_embed,
-    _accept,
+    map_type_check,
 )
 from utils.utilities import delete_messages
 from views.confirm import Confirm
@@ -42,7 +43,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
             "Submit map codes\n\n"
             "**Use command without arguments for a simpler submission.**"
             "You can add multiple creators and map types!\n\n"  # noqa: E501
-            f"Here is a list of map codes that can be used:\n{' | '.join(constants.TYPES_OF_MAP)}"
+            f"Here is a list of map codes that can be used:\n{' | '.join(TYPES_OF_MAP)}"
             "Use 'cancel' at any time to cancel the submission."
         ),
         brief="Submit map code",
@@ -140,6 +141,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
                 f"{map_code} already exists! Map submission rejected."
             )
             message_cache.append(exists)
+            await asyncio.sleep(10)
             await delete_messages(message_cache)
             return
 
@@ -158,7 +160,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
 
         embed = await map_submit_embed(submission, "New Map")
 
-        view = Confirm(embed)
+        view = Confirm("Submission")
         confirm = await ctx.send("Is this correct?", embed=embed, view=view)
         # Wait for the View to stop listening for input...
         await view.wait()
@@ -169,6 +171,244 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
             await submission.commit()
             new_map_channel = self.bot.get_channel(constants_bot.NEW_MAPS_CHANNEL_ID)
             await new_map_channel.send(embed=embed)
+        else:  # Reject
+            pass
+
+        message_cache.append(confirm)
+        await delete_messages(message_cache)
+
+    @commands.command(
+        help="Delete map code\nOnly original posters and mods can delete a map code.",
+        brief="Delete map code",
+    )
+    async def deletemap(self, ctx, map_code):
+        """Delete a specific map_code."""
+        message_cache = [ctx.message]
+        map_code = map_code.upper()
+
+        search = await MapData.find_one({"code": map_code})
+        check = await map_edit_checks(ctx, search)
+        if check < 1:
+            if check == -1:
+                msg = await ctx.channel.send(f"{map_code} does not exist.")
+                message_cache.append(msg)
+            elif check == 0:
+                msg = await ctx.channel.send(
+                    "You do not have sufficient permissions. Map was not affected."
+                )
+                message_cache.append(msg)
+                await asyncio.sleep(10)
+            await delete_messages(message_cache)
+            return
+
+        embed = await map_submit_embed(search, "Map Deletion")
+
+        view = Confirm("Deletion")
+        confirm = await ctx.send("Is this correct?", embed=embed, view=view)
+        await view.wait()
+        if view.value is None:  # Timed out
+            pass
+        elif view.value:  # Accept
+            await search.delete()
+        else:  # Reject
+            pass
+
+        message_cache.append(confirm)
+        await delete_messages(message_cache)
+
+    @commands.command(
+        help="Edit description for a certain map code. <desc> will overwrite current description.\nOnly original posters and mods can edit a map code.",
+        brief="Edit description for a certain map code",
+    )
+    async def editdesc(self, ctx, map_code, *, desc):
+        """Edit a specific map_code's description."""
+        message_cache = [ctx.message]
+        map_code = map_code.upper()
+
+        search = await MapData.find_one({"code": map_code})
+
+        check = await map_edit_checks(ctx, search)
+        if check < 1:
+            if check == -1:
+                msg = await ctx.channel.send(f"{map_code} does not exist.")
+                message_cache.append(msg)
+            elif check == 0:
+                msg = await ctx.channel.send(
+                    "You do not have sufficient permissions. Map was not affected."
+                )
+                message_cache.append(msg)
+                await asyncio.sleep(10)
+            await delete_messages(message_cache)
+            return
+
+        search.desc = desc
+
+        embed = await map_submit_embed(search, "Edit Map Description")
+
+        view = Confirm("Edit")
+        confirm = await ctx.send("Is this correct?", embed=embed, view=view)
+        await view.wait()
+        if view.value is None:  # Timed out
+            pass
+        elif view.value:  # Accept
+            await search.commit()
+        else:  # Reject
+            pass
+
+        message_cache.append(confirm)
+        await delete_messages(message_cache)
+
+    @commands.command(
+        help=(
+            "Edit map types for a certain map code.\n"
+            "<map_type> will overwrite current map types.\n"
+            "Only original posters and mods can edit a map code."
+        ),
+        brief="Edit map types for a certain map code",
+    )
+    async def edittypes(self, ctx, map_code, *, map_type):
+        """Edit a specific map_code's map_types."""
+        message_cache = [ctx.message]
+        map_code = map_code.upper()
+
+        search = await MapData.find_one({"code": map_code})
+
+        check = await map_edit_checks(ctx, search)
+        if check < 1:
+            if check == -1:
+                msg = await ctx.channel.send(f"{map_code} does not exist.")
+                message_cache.append(msg)
+            elif check == 0:
+                msg = await ctx.channel.send(
+                    "You do not have sufficient permissions. Map was not affected."
+                )
+                message_cache.append(msg)
+                await asyncio.sleep(10)
+            await delete_messages(message_cache)
+            return
+
+        map_type = [convert_short_types(x.upper()) for x in map_type.split()]
+
+        for x in map_type:
+            if x not in TYPES_OF_MAP:
+                m = await ctx.send(
+                    "<map_type> doesn't exist! Map submission rejected. "
+                    "Use `/maptypes` for a list of acceptable map types."
+                )
+                await asyncio.sleep(10)
+                message_cache.append(m)
+                await delete_messages(message_cache)
+                return
+
+        search.type = map_type
+
+        embed = await map_submit_embed(search, "Edit Map Types")
+
+        view = Confirm("Edit")
+        confirm = await ctx.send("Is this correct?", embed=embed, view=view)
+        await view.wait()
+        if view.value is None:  # Timed out
+            pass
+        elif view.value:  # Accept
+            await search.commit()
+        else:  # Reject
+            pass
+
+        message_cache.append(confirm)
+        await delete_messages(message_cache)
+
+    @commands.command(
+        help="Edit the map code for a certain map code.\n"
+        "Only original posters and mods can edit a map code.",
+        brief="Edit the map code for a certain map code",
+    )
+    async def editcode(self, ctx, map_code, new_map_code):
+        """Edit a specific map_code's map_code."""
+        message_cache = [ctx.message]
+        map_code = map_code.upper()
+        new_map_code = new_map_code.upper()
+
+        search = await MapData.find_one({"code": map_code})
+
+        check = await map_edit_checks(ctx, search)
+        if check < 1:
+            if check == -1:
+                msg = await ctx.channel.send(f"{map_code} does not exist.")
+                message_cache.append(msg)
+            elif check == 0:
+                msg = await ctx.channel.send(
+                    "You do not have sufficient permissions. Map was not affected."
+                )
+                message_cache.append(msg)
+                await asyncio.sleep(10)
+            await delete_messages(message_cache)
+            return
+
+        if not map_code_regex(new_map_code):
+            m = await ctx.send(
+                "Only letters A-Z and numbers 0-9 allowed in <map_code>. "
+                "Map submission rejected."
+            )
+            await asyncio.sleep(10)
+            message_cache.append(m)
+            await delete_messages(message_cache)
+            return
+
+        search.code = new_map_code
+
+        embed = await map_submit_embed(search, "Edit Map Code")
+
+        view = Confirm("Edit")
+        confirm = await ctx.send("Is this correct?", embed=embed, view=view)
+        await view.wait()
+        if view.value is None:  # Timed out
+            pass
+        elif view.value:  # Accept
+            await search.commit()
+        else:  # Reject
+            pass
+
+        message_cache.append(confirm)
+        await delete_messages(message_cache)
+
+    @commands.command(
+        help="Edit the map code for a certain map code.\n"
+        "Only original posters and mods can edit a map code.",
+        brief="Edit the map code for a certain map code",
+        aliases=["editcreators"],
+    )
+    async def editcreator(self, ctx, map_code, creator):
+        """Edit a specific map_code's creators."""
+        message_cache = [ctx.message]
+        map_code = map_code.upper()
+
+        search = await MapData.find_one({"code": map_code})
+
+        check = await map_edit_checks(ctx, search)
+        if check < 1:
+            if check == -1:
+                msg = await ctx.channel.send(f"{map_code} does not exist.")
+                message_cache.append(msg)
+            elif check == 0:
+                msg = await ctx.channel.send(
+                    "You do not have sufficient permissions. Map was not affected."
+                )
+                message_cache.append(msg)
+                await asyncio.sleep(10)
+            await delete_messages(message_cache)
+            return
+
+        search.creator = creator
+
+        embed = await map_submit_embed(search, "Edit Map Creator(s)")
+
+        view = Confirm("Edit")
+        confirm = await ctx.send("Is this correct?", embed=embed, view=view)
+        await view.wait()
+        if view.value is None:  # Timed out
+            pass
+        elif view.value:  # Accept
+            await search.commit()
         else:  # Reject
             pass
 

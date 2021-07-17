@@ -3,9 +3,8 @@ import re
 import sys
 
 import discord
-import pymongo
-
 import internal.constants as constants
+import pymongo
 from internal.database import MapData
 from utils.embeds import doom_embed
 
@@ -79,15 +78,16 @@ async def searchmap(
 
     # Displays paginated embeds
     if row:
-        paginator = BotEmbedPaginator(ctx, embeds)
-        await paginator.run()
-        try:
-            if paginator:
-                await asyncio.sleep(30)
-                await paginator.quit()
-        except Exception:  # TODO: Correct exception?
-            pass
-
+        # TODO: PAGINATOR BROKEN
+        # paginator = BotEmbedPaginator(ctx, embeds)
+        # await paginator.run()
+        # try:
+        #     if paginator:
+        #         await asyncio.sleep(30)
+        #         await paginator.quit()
+        # except Exception:  # TODO: Correct exception?
+        #     pass
+        pass
     else:
         m = await ctx.send(
             f"Nothing exists for {map_name or creator or map_code or map_type}!"
@@ -151,23 +151,19 @@ async def map_edit_confirmation(confirmed, msg, document):
     await msg.delete()
 
 
-async def map_edit_checks(ctx, map_code, search) -> int:
+async def map_edit_checks(ctx, search) -> int:
     """User input validation. Display error to user.
 
     Returns:
         (int): if arguments do not pass checks return 0, else 1
     """
     if not search:
-        await ctx.channel.send(f"{map_code} does not exist.")
-        return 0
+        return -1
     # Only allow original poster OR whitelisted roles to delete.
     if search.posted_by != ctx.author.id:
         if not bool(
             any(role.id in constants_bot.ROLE_WHITELIST for role in ctx.author.roles)
         ):
-            await ctx.channel.send(
-                "You do not have sufficient permissions. Map was not affected."
-            )
             return 0
     return 1
 
@@ -210,9 +206,3 @@ def map_type_check(m):
         if x not in constants.TYPES_OF_MAP:
             return
     return True
-
-
-async def _accept(submission, embed, bot):
-    await submission.commit()
-    channel = bot.get_channel(constants_bot.NEW_MAPS_CHANNEL_ID)
-    await channel.send(embed=embed)

@@ -2,10 +2,10 @@ import discord
 
 
 class Confirm(discord.ui.View):
-    def __init__(self, embed):
+    def __init__(self, name):
         super().__init__()
         self.value = None
-        self.embed = embed
+        self.name = name
 
     # When the confirm button is pressed, set the inner value to `True` and
     # stop the View from listening to more input.
@@ -15,7 +15,7 @@ class Confirm(discord.ui.View):
         self, button: discord.ui.Button, interaction: discord.Interaction
     ):
         await interaction.response.send_message(
-            "Submission accepted.", ephemeral=True, embed=self.embed
+            f"{self.name} accepted.", ephemeral=True
         )
         self.value = True
         self.stop()
@@ -24,7 +24,7 @@ class Confirm(discord.ui.View):
     @discord.ui.button(label="Reject", style=discord.ButtonStyle.red)
     async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.send_message(
-            "Submission rejected.", ephemeral=True, embed=self.embed
+            f"{self.name} rejected.", ephemeral=True
         )
         self.value = False
         self.stop()
