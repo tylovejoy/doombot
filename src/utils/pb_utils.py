@@ -108,7 +108,7 @@ async def search_all_pbs(ctx, query, name=""):
                 inline=False,
             )
             embeds.append(embed)
-            embed = discord.Embed(title=name)
+            embed = doom_embed(title=name)
 
         # Create embed fields for fields 1 thru 9
         elif row % 10 != 0 or row == 0:

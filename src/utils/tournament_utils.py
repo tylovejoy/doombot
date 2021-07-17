@@ -1,15 +1,15 @@
 import logging
 import sys
-import discord
-from disputils import BotEmbedPaginator
 
+import discord
 from database.BonusData import BonusData
 from database.HardcoreData import HardcoreData
 from database.MildcoreData import MildcoreData
 from database.TimeAttackData import TimeAttackData
+from disputils import BotEmbedPaginator
+from internal import confirmation, constants
 from internal.pb_utils import display_record
-from internal import constants
-from internal import confirmation
+from utils.embeds import doom_embed
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -35,7 +35,7 @@ def category_sort(message):
 async def tournament_boards(category, ctx=None, guild=None):
     """Display boards for scoreboard and leaderboard commands."""
     count = 0
-    embed = discord.Embed(title=f"{category}")
+    embed = doom_embed(title=f"{category}")
     embeds = []
 
     if category == "TIMEATTACK":
@@ -65,7 +65,7 @@ async def tournament_boards(category, ctx=None, guild=None):
         )
         if (count + 1) % 10 == 0 or (count + 1) == data_amount:
             embeds.append(embed)
-            embed = discord.Embed(title=category)
+            embed = doom_embed(title=category)
 
         count += 1
     if guild:
@@ -105,7 +105,7 @@ async def exporter(category, channel, ctx=None, guild=None):
                 lambda m: m.id == entry.posted_by, guild.members
             )
 
-        embed = discord.Embed(
+        embed = doom_embed(
             title=username.name,
             url=entry.attachment_url,
         )
@@ -129,7 +129,7 @@ async def single_exporter(ctx, category, user: discord.Member = None):
             lambda m: m.id == entry.posted_by, ctx.guild.members
         )
 
-        embed = discord.Embed(
+        embed = doom_embed(
             title=username.name,
             url=entry.attachment_url,
         )
