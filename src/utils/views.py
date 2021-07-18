@@ -179,7 +179,7 @@ class Guide(discord.ui.View):
 
 
 class TournamentChoices(discord.ui.View):
-    def __init__(self, author):
+    def __init__(self, author, no_all=False):
         super().__init__(timeout=120)
         self.author = author
         self.value = None
@@ -190,20 +190,50 @@ class TournamentChoices(discord.ui.View):
         return False
 
     @discord.ui.select(
-        placeholder="Category",
+        placeholder="Choose a category",
         min_values=1,
         max_values=1,
         options=[
-            discord.SelectOption(label="Time Attack"),
-            discord.SelectOption(label="Mildcore"),
-            discord.SelectOption(label="Hardcore"),
-            discord.SelectOption(label="Bonus"),
-            discord.SelectOption(label="All"),
+            discord.SelectOption(label="Time Attack", value="0"),
+            discord.SelectOption(label="Mildcore", value="1"),
+            discord.SelectOption(label="Hardcore", value="2"),
+            discord.SelectOption(label="Bonus", value="3"),
+            discord.SelectOption(label="All", value="4"),
         ],
     )
     async def callback(
         self, select: discord.ui.select, interaction: discord.Interaction
     ):
-        self.value = select.values[0]
+        self.value = int(select.values[0])
+        self.clear_items()
+        self.stop()
+
+
+class TournamentChoicesNoAll(discord.ui.View):
+    def __init__(self, author, no_all=False):
+        super().__init__(timeout=120)
+        self.author = author
+        self.value = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user == self.author:
+            return True
+        return False
+
+    @discord.ui.select(
+        placeholder="Choose a category",
+        min_values=1,
+        max_values=1,
+        options=[
+            discord.SelectOption(label="Time Attack", value="0"),
+            discord.SelectOption(label="Mildcore", value="1"),
+            discord.SelectOption(label="Hardcore", value="2"),
+            discord.SelectOption(label="Bonus", value="3"),
+        ],
+    )
+    async def callback(
+        self, select: discord.ui.select, interaction: discord.Interaction
+    ):
+        self.value = int(select.values[0])
         self.clear_items()
         self.stop()

@@ -26,7 +26,7 @@ from utils.tournament_utils import (
     tournament_boards,
 )
 from utils.tourrnament_wizard import TournamentWizard
-from utils.views import Confirm, TournamentChoices
+from utils.views import Confirm, TournamentChoices, TournamentChoicesNoAll
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -300,7 +300,7 @@ class Tournament(commands.Cog, name="Tournament"):
         await view.wait()
 
         if view.value:
-            await msg.edit(content="Submission accepted", delete_after=15)
+            await msg.edit(content="Submission accepted", delete_after=15, view=view)
             # Update record
             search.record = record_in_seconds
             search.name = ctx.author.name
@@ -313,6 +313,7 @@ class Tournament(commands.Cog, name="Tournament"):
             await msg.edit(
                 content="Submission has not been accepted.",
                 delete_after=15,
+                view=view,
             )
 
         elif view.value is None:
@@ -320,6 +321,7 @@ class Tournament(commands.Cog, name="Tournament"):
             await msg.edit(
                 content="Submission timed out! Submission has not been accepted.",
                 delete_after=15,
+                view=view,
             )
 
     @commands.command(
@@ -383,15 +385,18 @@ class Tournament(commands.Cog, name="Tournament"):
 
         if view.value:
             await msg.edit(
-                content="Personal best deleted succesfully.", delete_after=15
+                content="Personal best deleted succesfully.", delete_after=15, view=view
             )
             await search.delete()
         elif not view.value:
-            await msg.edit(content="Personal best was not deleted.", delete_after=15)
+            await msg.edit(
+                content="Personal best was not deleted.", delete_after=15, view=view
+            )
         elif view.value is None:
             await msg.edit(
                 content="Deletion timed out! Personal best has not been deleted.",
                 delete_after=15,
+                view=view,
             )
 
     @commands.group(
@@ -405,13 +410,27 @@ class Tournament(commands.Cog, name="Tournament"):
     async def board(self, ctx):
         await ctx.message.delete()
         if ctx.invoked_subcommand is None:
-            embed = doom_embed(
-                title="Leadboard for Tournament Times",
-                desc="Choose a specific category to view currently submitted times for that category. \nExample: /board ta",
+            view = TournamentChoicesNoAll(ctx.author)
+            msg = await ctx.send(
+                "Which category leaderboard would you like to view?",
+                delete_after=15,
+                view=view,
             )
-            for cmd in self.bot.get_command("board").walk_commands():
-                embed.add_field(name=f"{cmd}", value=f"{cmd.help}", inline=False)
-            await ctx.send(embed=embed, delete_after=30)
+            await view.wait()
+            await msg.edit(content="Please wait...", view=view, delete_after=1)
+            if view.value == 0:
+                await self._timeattack(ctx)
+            elif view.value == 1:
+                await self._mildcore(ctx)
+            elif view.value == 2:
+                await self._hardcore(ctx)
+            elif view.value == 3:
+                await self._bonus(ctx)
+            elif view.value == 4:
+                await self._timeattack(ctx)
+                await self._mildcore(ctx)
+                await self._hardcore(ctx)
+                await self._bonus(ctx)
 
     @board.command(
         name="ta", aliases=["timeattack", "time-attack"], help="View time attack times"
@@ -444,13 +463,25 @@ class Tournament(commands.Cog, name="Tournament"):
     @commands.has_role(constants_bot.ORG_ROLE_ID)
     async def clear(self, ctx):
         if ctx.invoked_subcommand is None:
-            embed = doom_embed(
-                title="Clear Tournament Times",
-                desc="Clear all times from a specific tournament category.",
+            view = TournamentChoices(ctx.author)
+            msg = await ctx.send(
+                "Which category would you like to clear?", delete_after=15, view=view
             )
-            for cmd in self.bot.get_command("clear").walk_commands():
-                embed.add_field(name=f"{cmd}", value=f"{cmd.help}", inline=False)
-            await ctx.send(embed=embed, delete_after=15)
+            await view.wait()
+            await msg.edit(content="Please wait...", view=view, delete_after=1)
+            if view.value == 0:
+                await self._timeattack_clear(ctx)
+            elif view.value == 1:
+                await self._mildcore_clear(ctx)
+            elif view.value == 2:
+                await self._hardcore_clear(ctx)
+            elif view.value == 3:
+                await self._bonus_clear(ctx)
+            elif view.value == 4:
+                await self._timeattack_clear(ctx)
+                await self._mildcore_clear(ctx)
+                await self._hardcore_clear(ctx)
+                await self._bonus_clear(ctx)
 
     @clear.command(
         name="ta", aliases=["timeattack", "time-attack"], help="Clear time attack times"
@@ -488,13 +519,25 @@ class Tournament(commands.Cog, name="Tournament"):
     @commands.has_role(constants_bot.ORG_ROLE_ID)
     async def export(self, ctx):
         if ctx.invoked_subcommand is None:
-            embed = doom_embed(
-                title="Export Tournament Screenshots",
-                desc="Grab all screenshots from a specific tournament category.",
+            view = TournamentChoices(ctx.author)
+            msg = await ctx.send(
+                "Which category would you like to export?", delete_after=15, view=view
             )
-            for cmd in self.bot.get_command("export").walk_commands():
-                embed.add_field(name=f"{cmd}", value=f"{cmd.help}", inline=False)
-            await ctx.send(embed=embed, delete_after=15)
+            await view.wait()
+            await msg.edit(content="Please wait...", view=view, delete_after=1)
+            if view.value == 0:
+                await self._export_timeattack(ctx)
+            elif view.value == 1:
+                await self._export_mildcore(ctx)
+            elif view.value == 2:
+                await self._export_hardcore(ctx)
+            elif view.value == 3:
+                await self._export_bonus(ctx)
+            elif view.value == 4:
+                await self._export_timeattack(ctx)
+                await self._export_mildcore(ctx)
+                await self._export_hardcore(ctx)
+                await self._export_bonus(ctx)
 
     @export.command(
         name="ta",
@@ -627,36 +670,22 @@ class Tournament(commands.Cog, name="Tournament"):
     async def lock(self, ctx):
         await ctx.message.delete()
         if ctx.invoked_subcommand is None:
-            # embed = doom_embed(
-            #     title="Lock a specific submission channel",
-            #     desc="Example: /unlock ta",
-            # )
-            # for cmd in self.bot.get_command("unlock").walk_commands():
-            #     embed.add_field(name=f"{cmd}", value=f"{cmd.help}", inline=False)
 
             view = TournamentChoices(ctx.author)
             msg = await ctx.send(
                 "Which category would you like to lock?", delete_after=15, view=view
             )
             await view.wait()
-            if view.value == "Time Attack":
-                await msg.edit(content="Please wait...", view=view, delete_after=1)
+            await msg.edit(content="Please wait...", view=view, delete_after=1)
+            if view.value == 0:
                 await self._lock_ta(ctx)
-            elif view.value == "Mildcore":
-                await msg.edit(content="Please wait...", view=view, delete_after=1)
+            elif view.value == 1:
                 await self._lock_mc(ctx)
-            elif view.value == "Hardcore":
-                await msg.edit(content="Please wait...", view=view, delete_after=1)
+            elif view.value == 2:
                 await self._lock_hc(ctx)
-            elif view.value == "Bonus":
-                await msg.edit(content="Please wait...", view=view, delete_after=1)
+            elif view.value == 3:
                 await self._lock_bonus(ctx)
-            elif view.value == "All":
-                await msg.edit(
-                    content="Please wait...",
-                    view=view,
-                    delete_after=1,
-                )
+            elif view.value == 4:
                 await self._lock_ta(ctx)
                 await self._lock_mc(ctx)
                 await self._lock_hc(ctx)
@@ -744,13 +773,25 @@ class Tournament(commands.Cog, name="Tournament"):
     @commands.has_role(constants_bot.ORG_ROLE_ID)
     async def unlock(self, ctx):
         if ctx.invoked_subcommand is None:
-            embed = doom_embed(
-                title="Unock a specific submission channel",
-                desc="Example: /unlock ta",
+            view = TournamentChoices(ctx.author)
+            msg = await ctx.send(
+                "Which category would you like to unlock?", delete_after=15, view=view
             )
-            for cmd in self.bot.get_command("unlock").walk_commands():
-                embed.add_field(name=f"{cmd}", value=f"{cmd.help}", inline=False)
-            await ctx.send(embed=embed, delete_after=15)
+            await view.wait()
+            await msg.edit(content="Please wait...", view=view, delete_after=1)
+            if view.value == 0:
+                await self._unlock_ta(ctx)
+            elif view.value == 1:
+                await self._unlock_mc(ctx)
+            elif view.value == 2:
+                await self._unlock_hc(ctx)
+            elif view.value == 3:
+                await self._unlock_bonus(ctx)
+            elif view.value == 4:
+                await self._unlock_ta(ctx)
+                await self._unlock_mc(ctx)
+                await self._unlock_hc(ctx)
+                await self._unlock_bonus(ctx)
 
     @unlock.command(
         name="ta",

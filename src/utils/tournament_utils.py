@@ -81,7 +81,7 @@ async def tournament_boards(category, ctx=None, guild=None):
                 await view.wait()
                 await paginator.delete()
             else:
-                await channel.send(embed=embeds[0], delete_after=120)
+                await ctx.send(embed=embeds[0], delete_after=120)
         if guild:
             for e in embeds:
                 await channel.send(embed=e)
