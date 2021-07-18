@@ -10,6 +10,7 @@ from disputils import BotEmbedPaginator
 from internal import confirmation, constants
 from internal.pb_utils import display_record
 from utils.embeds import doom_embed
+from utils.views import Confirm, Paginator
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -34,6 +35,8 @@ def category_sort(message):
 
 async def tournament_boards(category, ctx=None, guild=None):
     """Display boards for scoreboard and leaderboard commands."""
+    author = ctx.message.author
+    await ctx.message.delete()
     count = 0
     embed = doom_embed(title=f"{category}")
     embeds = []
@@ -72,8 +75,13 @@ async def tournament_boards(category, ctx=None, guild=None):
         channel = guild.get_channel(constants_bot.EXPORT_SS_CHANNEL_ID)
     if embeds:
         if ctx:
-            paginator = BotEmbedPaginator(ctx, embeds)
-            await paginator.run()
+            if len(embeds) > 1:
+                view = Paginator(embeds, author)
+                paginator = await ctx.send(embed=view.formatted_pages[0], view=view)
+                await view.wait()
+                await paginator.delete()
+            else:
+                await channel.send(embed=embeds[0], delete_after=120)
         if guild:
             for e in embeds:
                 await channel.send(embed=e)
@@ -82,7 +90,10 @@ async def tournament_boards(category, ctx=None, guild=None):
         if guild:
             await channel.send(f"No times exist for the {category.lower()} tournament!")
         else:
-            await ctx.send(f"No times exist for the {category.lower()} tournament!")
+            await ctx.send(
+                f"No times exist for the {category.lower()} tournament!",
+                delete_after=15,
+            )
 
 
 async def exporter(category, channel, ctx=None, guild=None):
@@ -139,6 +150,8 @@ async def single_exporter(ctx, category, user: discord.Member = None):
 
 
 async def confirm_collection_drop(ctx, category):
+    author = ctx.message.author
+    await ctx.message.delete()
     if category == "time attack":
         _collection = TimeAttackData
     elif category == "mildcore":
@@ -148,44 +161,52 @@ async def confirm_collection_drop(ctx, category):
     elif category == "bonus":
         _collection = BonusData
 
+    view = Confirm("Deletion", author)
     confirmation_msg = await ctx.send(
-        f"Are you sure you want to delete all {category + ' ' if category != 'all' else ''}times?"
+        f"Are you sure you want to delete all {category + ' ' if category != 'all' else ''}times?",
+        view=view,
     )
-    confirmed = await confirmation.confirm(ctx, confirmation_msg)
-    if confirmed is True:
-
+    await view.wait()
+    if view.value:
         if category == "all":
             msg_ta = await ctx.send("Clearing all time attack times... Please wait.")
             await TimeAttackData.collection.drop()
-            await msg_ta.edit(content="All times in time attack have been cleared.")
+            await msg_ta.edit(
+                content="All times in time attack have been cleared.", delete_after=10
+            )
 
             msg_mc = await ctx.send("Clearing all mildcore times... Please wait.")
             await MildcoreData.collection.drop()
-            await msg_mc.edit(content="All times in mildcore have been cleared.")
+            await msg_mc.edit(
+                content="All times in mildcore have been cleared.", delete_after=10
+            )
 
             msg_hc = await ctx.send("Clearing all hardcore times... Please wait.")
             await HardcoreData.collection.drop()
-            await msg_hc.edit(content="All times in hardcore have been cleared.")
+            await msg_hc.edit(
+                content="All times in hardcore have been cleared.", delete_after=10
+            )
 
             msg_bonus = await ctx.send("Clearing all bonus times... Please wait.")
             await BonusData.collection.drop()
-            await msg_bonus.edit(content="All times in bonus have been cleared.")
+            await msg_bonus.edit(
+                content="All times in bonus have been cleared.", delete_after=10
+            )
 
         else:
             msg = await ctx.send(f"Clearing {category} times... Please wait.")
             await _collection.collection.drop()
             await msg.edit(
-                content=f"All times {'in' if category != 'all' else ''} {category if category != 'all' else ''} have been cleared."
+                content=f"All times {'in' if category != 'all' else ''} {category if category != 'all' else ''} have been cleared.",
+                delete_after=10,
             )
 
-    elif confirmed is False:
-        await confirmation_msg.edit(
-            content="Times were not cleared.",
-        )
+    elif not view.value:
+        await confirmation_msg.edit(content="Times were not cleared.", delete_after=10)
 
-    elif confirmed is None:
+    elif view.value is None:
         await confirmation_msg.edit(
-            content="Timed out! Times were not cleared.",
+            content="Timed out! Times were not cleared.", delete_after=10
         )
 
 
