@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 from pathlib import Path
+
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -9,6 +10,16 @@ from pretty_help import PrettyHelp
 
 # Logging setup
 logger = logging.getLogger(__name__)
+
+
+DOOMBOT_ASCII = r"""
+______  _____  _____ ___  _________  _____  _____
+|  _  \|  _  ||  _  ||  \/  || ___ \|  _  ||_   _|
+| | | || | | || | | || .  . || |_/ /| | | |  | |
+| | | || | | || | | || |\/| || ___ \| | | |  | |
+| |/ / \ \_/ /\ \_/ /| |  | || |_/ /\ \_/ /  | |
+|___/   \___/  \___/ \_|  |_/\____/  \___/   \_/
+"""
 
 
 class Bot(commands.Bot):
@@ -34,22 +45,24 @@ class Bot(commands.Bot):
             1
         )  # Ensure that on_ready has completed and finished printing
         cogs = [x.stem for x in Path("cogs").glob("*.py")]
-        logger.info("Loading extensions...\n")
+        logger.info("Loading extensions...")
         for extension in cogs:
             try:
                 self.load_extension(f"cogs.{extension}")
-                logger.info(f"loaded {extension}")
+                logger.info(f"Loading {extension}...")
             except Exception as e:
                 error = f"{extension}\n {type(e).__name__} : {e}"
                 logger.info(f"failed to load extension {error}")
+        logger.info("Extensions loaded.")
 
     async def on_ready(self):
         """Display app info when bot comes online."""
         self.app_info = await self.application_info()
         logger.info(
-            f"\n\nLogged in as: {self.user.name}\n"
+            f"{DOOMBOT_ASCII}"
+            f"\nLogged in as: {self.user.name}\n"
             f"Using discord.py version: {discord.__version__}\n"
-            f"Owner: {self.app_info.owner}\n\n"
+            f"Owner: {self.app_info.owner}\n"
         )
 
     async def on_message(self, message):
