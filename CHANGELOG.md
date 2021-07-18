@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v2.3.1 (2021-07-18)
+### Fix
+* CHANGELOG.md ([`fc1733a`](https://github.com/tylovejoy/doombot/commit/fc1733a29599383cb79584c25a1a82b4c8fe19a2))
+
 ## v2.3.0 (2021-07-18)
 ### Feature
 * Added guide support ([`3d1be88`](https://github.com/tylovejoy/doombot/commit/3d1be880c98c0fb36bd34cd5a51502c07163fe53))
