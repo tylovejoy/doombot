@@ -6,3 +6,7 @@ __pycache__
 venv
 
 /venv/
+.flake8
+.isort.cfg
+pyproject.toml
+.pre-commit-config.yaml
