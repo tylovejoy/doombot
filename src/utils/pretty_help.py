@@ -269,10 +269,7 @@ class PrettyHelp(HelpCommand):
 
     def get_ending_note(self):
         """Returns help command's ending note. This is mainly useful to override for i18n purposes."""
-        note = self.ending_note or (
-            "Type {help.clean_prefix}{help.invoked_with} command for more info on a command.\n"
-            "You can also type {help.clean_prefix}{help.invoked_with} category for more info on a category."
-        )
+        note = self.ending_note or (" ")
         return note.format(ctx=self.context, help=self)
 
     async def send_pages(self):
