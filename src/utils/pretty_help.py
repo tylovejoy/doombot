@@ -4,7 +4,7 @@ from typing import List, Union
 import discord
 from discord.ext import commands
 from discord.ext.commands.help import HelpCommand
-from menu import DefaultMenu
+from utils.menu import DefaultMenu
 
 
 class Paginator:
