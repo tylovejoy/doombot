@@ -32,8 +32,11 @@ def category_sort(message):
 
 async def tournament_boards(category, ctx=None, guild=None):
     """Display boards for scoreboard and leaderboard commands."""
-    author = ctx.message.author
-    await ctx.message.delete()
+    if ctx:
+        try:
+            await ctx.message.delete()
+        except discord.HTTPException:
+            pass
     count = 0
     embed = doom_embed(title=f"{category}")
     embeds = []
@@ -73,7 +76,7 @@ async def tournament_boards(category, ctx=None, guild=None):
     if embeds:
         if ctx:
             if len(embeds) > 1:
-                view = Paginator(embeds, author)
+                view = Paginator(embeds, ctx.author)
                 paginator = await ctx.send(embed=view.formatted_pages[0], view=view)
                 await view.wait()
                 await paginator.delete()

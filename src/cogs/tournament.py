@@ -1,7 +1,7 @@
 import asyncio
 import datetime
-import logging
 import sys
+from logging import getLogger
 
 import dateparser
 import discord
@@ -26,13 +26,15 @@ from utils.tournament_utils import (
     tournament_boards,
 )
 from utils.tourrnament_wizard import TournamentWizard
-from utils.views import Confirm
+from utils.views import Confirm, TournamentChoices
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
         from internal import constants_bot_test as constants_bot
 else:
     from internal import constants_bot_prod as constants_bot
+
+logger = getLogger(__name__)
 
 
 def viewable_channels():
@@ -54,7 +56,7 @@ class Tournament(commands.Cog, name="Tournament"):
         self.bot = bot
         self.schedule_cache = None
 
-        logging.info("schedule_checker has started.")
+        logger.info("schedule_checker has started.")
         self.schedule_checker.start()
         self.guild = self.bot.get_guild(constants_bot.GUILD_ID)
 
@@ -105,13 +107,13 @@ class Tournament(commands.Cog, name="Tournament"):
                     >= s.start_time
                     != datetime.datetime(year=1, month=1, day=1)
                 ):
-                    logging.info("Starting scheduled tournment.")
+                    logger.info("Starting scheduled tournment.")
                     await self._start_round(s.mentions, s.embed_dict)
                     s.start_time = datetime.datetime(year=1, month=1, day=1)
                     await s.commit()
 
                 if current_time >= s.schedule:
-                    logging.info("Ending scheduled tournment.")
+                    logger.info("Ending scheduled tournment.")
                     await self._end_round(s.mentions)
                     await s.delete()
 
@@ -623,14 +625,42 @@ class Tournament(commands.Cog, name="Tournament"):
     )
     @commands.has_role(constants_bot.ORG_ROLE_ID)
     async def lock(self, ctx):
+        await ctx.message.delete()
         if ctx.invoked_subcommand is None:
-            embed = doom_embed(
-                title="Lock a specific submission channel",
-                desc="Example: /unlock ta",
+            # embed = doom_embed(
+            #     title="Lock a specific submission channel",
+            #     desc="Example: /unlock ta",
+            # )
+            # for cmd in self.bot.get_command("unlock").walk_commands():
+            #     embed.add_field(name=f"{cmd}", value=f"{cmd.help}", inline=False)
+
+            view = TournamentChoices(ctx.author)
+            msg = await ctx.send(
+                "Which category would you like to lock?", delete_after=15, view=view
             )
-            for cmd in self.bot.get_command("unlock").walk_commands():
-                embed.add_field(name=f"{cmd}", value=f"{cmd.help}", inline=False)
-            await ctx.send(embed=embed, delete_after=15)
+            await view.wait()
+            if view.value == "Time Attack":
+                await msg.edit(content="Please wait...", view=view, delete_after=1)
+                await self._lock_ta(ctx)
+            elif view.value == "Mildcore":
+                await msg.edit(content="Please wait...", view=view, delete_after=1)
+                await self._lock_mc(ctx)
+            elif view.value == "Hardcore":
+                await msg.edit(content="Please wait...", view=view, delete_after=1)
+                await self._lock_hc(ctx)
+            elif view.value == "Bonus":
+                await msg.edit(content="Please wait...", view=view, delete_after=1)
+                await self._lock_bonus(ctx)
+            elif view.value == "All":
+                await msg.edit(
+                    content="Please wait...",
+                    view=view,
+                    delete_after=1,
+                )
+                await self._lock_ta(ctx)
+                await self._lock_mc(ctx)
+                await self._lock_hc(ctx)
+                await self._lock_bonus(ctx)
 
     @lock.command(
         name="ta",
@@ -828,18 +858,24 @@ class Tournament(commands.Cog, name="Tournament"):
             if result["start_time"] is not None:
                 await confirmation_msg.edit(
                     content=f"Scheduled tournament confirmed for {result['start_time_datetime'].strftime('%m/%d/%Y at approx. %H:%M %Z')}",
+                    view=view,
                 )
                 return
+            else:
+                await confirmation_msg.edit(view=view, delete_after=15)
             await self._start_round(result["mentions"], wizard.schedule.embed_dict)
 
         elif not view.value:
             await confirmation_msg.edit(
-                content="Not accepted. `/start` will not run.", delete_after=15
+                content="Not accepted. `/start` will not run.",
+                delete_after=15,
+                view=view,
             )
 
         elif view.value is None:
             await confirmation_msg.edit(
                 content="Confirmation timed out! `/start` will not run.",
+                view=view,
                 delete_after=15,
             )
 
@@ -852,11 +888,14 @@ class Tournament(commands.Cog, name="Tournament"):
     async def _announcement(self, ctx, title: str, message: str, *, mentions=None):
         author = ctx.message.author
         await ctx.message.delete()
-        combined_mentions = "".join([x for x in mentions])
+        if mentions:
+            combined_mentions = "".join([x for x in mentions])
+        else:
+            combined_mentions = ""
         channel = self.bot.get_channel(constants_bot.TOURNAMENT_INFO_CHANNEL_ID)
         embed = doom_embed(title="Announcement")
         embed.add_field(name=title, value=message)
-        if ctx.message.attachments[0] is not None:
+        if len(ctx.message.attachments) > 0:
             embed.set_image(url=ctx.message.attachments[0].url)
 
         view = Confirm("Announcement", author)
@@ -865,15 +904,18 @@ class Tournament(commands.Cog, name="Tournament"):
 
         if view.value:
             await channel.send(f"{combined_mentions}", embed=embed)
-            await confirmation_msg.edit(delete_after=15)
+            await confirmation_msg.edit(delete_after=15, view=view)
         elif not view.value:
             await confirmation_msg.edit(
-                content="Not accepted. `/announce` will not run.", delete_after=15
+                content="Not accepted. `/announce` will not run.",
+                delete_after=15,
+                view=view,
             )
             return
         elif view.value is None:
             await confirmation_msg.edit(
                 content="Confirmation timed out! `/announce` will not run.",
+                view=view,
                 delete_after=15,
             )
             return

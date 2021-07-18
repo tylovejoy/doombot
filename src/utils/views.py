@@ -38,6 +38,7 @@ class Confirm(discord.ui.View):
             f"{self.name} accepted.", ephemeral=True
         )
         self.value = True
+        self.clear_items()
         self.stop()
 
     # This one is similar to the confirmation button except sets the inner value to `False`
@@ -47,6 +48,7 @@ class Confirm(discord.ui.View):
             f"{self.name} rejected.", ephemeral=True
         )
         self.value = False
+        self.clear_items()
         self.stop()
 
 
@@ -174,3 +176,34 @@ class Verification(discord.ui.View):
 class Guide(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=120)
+
+
+class TournamentChoices(discord.ui.View):
+    def __init__(self, author):
+        super().__init__(timeout=120)
+        self.author = author
+        self.value = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user == self.author:
+            return True
+        return False
+
+    @discord.ui.select(
+        placeholder="Category",
+        min_values=1,
+        max_values=1,
+        options=[
+            discord.SelectOption(label="Time Attack"),
+            discord.SelectOption(label="Mildcore"),
+            discord.SelectOption(label="Hardcore"),
+            discord.SelectOption(label="Bonus"),
+            discord.SelectOption(label="All"),
+        ],
+    )
+    async def callback(
+        self, select: discord.ui.select, interaction: discord.Interaction
+    ):
+        self.value = select.values[0]
+        self.clear_items()
+        self.stop()
