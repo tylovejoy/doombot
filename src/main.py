@@ -1,9 +1,11 @@
 import asyncio
 import json
 import logging
-import os
+from os import getenv
+from os.path import join
 
 import internal.database_init
+from dotenv import load_dotenv
 from internal.bot import Bot
 
 logger = logging.getLogger()
@@ -18,40 +20,18 @@ logger.addHandler(consoleHandle)
 
 
 def load_config():
-    """Load config and .env file."""
-    from os.path import dirname, join
-
-    from dotenv import load_dotenv
-
-    # Create .env file path.
-    dotenv_path = join("..", ".env")
-
-    # Load file from the path.
-    load_dotenv(dotenv_path)
-
+    load_dotenv(join("..", ".env"))
     with open("data/config.json", "r", encoding="utf-8-sig") as doc:
         return json.load(doc)
 
 
 async def run():
-    """Where the bot gets started.
-    If you wanted to create an database connection pool
-    or other session for the bot to use,
-    it's recommended that you create it here and pass it to the bot as a kwarg.
-    """
-
     def get_config_var(env_name, config_path, config_name, **kwargs):
-        """Attempt to get a variable from the env file.
-        If no env variable, from the config key, and finally,
-        if none found, return the fallback value.
-        """
-        v = os.getenv(env_name, config_path.get(config_name, kwargs.get("fallback")))
-
+        v = getenv(env_name, config_path.get(config_name, kwargs.get("fallback")))
         if v is None and kwargs.get("error", False):
             raise KeyError(
                 f"Failed to get configuration key. Env name: {env_name}, Config name: {config_name}"
             )
-
         return v
 
     config = load_config()
