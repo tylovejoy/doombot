@@ -2,10 +2,8 @@ import asyncio
 import json
 import logging
 import os
-import sys
 
 import internal.database_init
-
 from internal.bot import Bot
 
 logger = logging.getLogger()
@@ -21,7 +19,8 @@ logger.addHandler(consoleHandle)
 
 def load_config():
     """Load config and .env file."""
-    from os.path import join, dirname
+    from os.path import dirname, join
+
     from dotenv import load_dotenv
 
     # Create .env file path.
@@ -77,14 +76,8 @@ async def run():
     )
 
     bot.config = config
-
-    try:
-        token = get_config_var("BOT_TOKEN", config, "token", error=True)
-
-        await bot.start(token)
-    except KeyboardInterrupt:
-        await bot.logout()
-        sys.exit()
+    token = get_config_var("BOT_TOKEN", config, "token", error=True)
+    await bot.start(token)
 
 
 if __name__ == "__main__":
