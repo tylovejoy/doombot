@@ -134,7 +134,7 @@ class ErrorHandler(commands.Cog):
             message = f"The command **{ctx.command.name}** is on cooldown for {time}"
             return await ctx.message.reply(
                 embed=discord.Embed(
-                    description=f"<a:ChumpyNo:866315541178613791> {message}",
+                    description=f"<a:ChumpyNo:866364385554464768> {message}",
                     colour=discord.Colour.red(),
                 ),
                 mention_author=False,
@@ -147,7 +147,7 @@ class ErrorHandler(commands.Cog):
             if not ctx.command.enabled:
                 return await ctx.message.reply(
                     embed=discord.Embed(
-                        description="<a:ChumpyNo:866315541178613791> This command has been disabled by one of our owners - Most likely due to a bug.",
+                        description="<a:ChumpyNo:866364385554464768> This command has been disabled by one of our owners - Most likely due to a bug.",
                         colour=discord.Colour.red(),
                     ),
                     mention_author=False,
@@ -158,7 +158,7 @@ class ErrorHandler(commands.Cog):
 
             return await ctx.message.reply(
                 embed=discord.Embed(
-                    description="<a:ChumpyNo:866315541178613791> This command has been disabled. Re-enable it use it again!",
+                    description="<a:ChumpyNo:866364385554464768> This command has been disabled. Re-enable it use it again!",
                     colour=discord.Colour.red(),
                 ),
                 mention_author=False,
@@ -222,7 +222,7 @@ class ErrorHandler(commands.Cog):
         elif isinstance(error, commands.errors.MemberNotFound):
             await ctx.message.reply(
                 embed=discord.Embed(
-                    description=f"<a:ChumpyNo:866315541178613791> Member named **{error.argument}** was not found!",
+                    description=f"<a:ChumpyNo:866364385554464768> Member named **{error.argument}** was not found!",
                     colour=discord.Colour.red(),
                 ),
                 mention_author=False,
@@ -235,7 +235,7 @@ class ErrorHandler(commands.Cog):
         elif isinstance(error, commands.errors.UserNotFound):
             await ctx.message.reply(
                 embed=discord.Embed(
-                    description=f"<a:ChumpyNo:866315541178613791> Member named **{error.argument}** was not found!",
+                    description=f"<a:ChumpyNo:866364385554464768> Member named **{error.argument}** was not found!",
                     colour=discord.Colour.red(),
                 ),
                 mention_author=False,
@@ -249,7 +249,7 @@ class ErrorHandler(commands.Cog):
             ctx.command.reset_cooldown(ctx)
             await ctx.message.reply(
                 embed=discord.Embed(
-                    description="<a:ChumpyNo:866315541178613791> Channel named **{}** cannot be found! Retry with a valid channel.".format(
+                    description="<a:ChumpyNo:866364385554464768> Channel named **{}** cannot be found! Retry with a valid channel.".format(
                         error.argument
                     ),
                     colour=discord.Colour.red(),
@@ -264,7 +264,7 @@ class ErrorHandler(commands.Cog):
             ctx.command.reset_cooldown(ctx)
             await ctx.message.reply(
                 embed=discord.Embed(
-                    description="<a:ChumpyNo:866315541178613791> Role named **{}** cannot be found!".format(
+                    description="<a:ChumpyNo:866364385554464768> Role named **{}** cannot be found!".format(
                         error.argument
                     ),
                     colour=discord.Colour.red(),
@@ -279,7 +279,7 @@ class ErrorHandler(commands.Cog):
             ctx.command.reset_cooldown(ctx)
             await ctx.message.reply(
                 embed=discord.Embed(
-                    description="<a:ChumpyNo:866315541178613791> Either you don't have permission to use this or you're in the wrong channel!",
+                    description="<a:ChumpyNo:866364385554464768> Either you don't have permission to use this or you're in the wrong channel!",
                     colour=discord.Colour.red(),
                 ),
                 mention_author=False,
@@ -307,20 +307,22 @@ class ErrorHandler(commands.Cog):
                 except discord.errors.Forbidden:
                     return
 
-            channel = self.bot.get_channel(840841122522988584)
+            channel = self.bot.get_channel(849878847310528523)
             if len(error) < 1850:
                 await channel.send(
-                    "**Error in the command {}**, Located from `{}` by user `{}`\n```\n".format(
-                        ctx.command.name, ctx.guild.name, ctx.author
+                    "**Error in the command {}**, Located from `{}` by user `{}`\nReference: `{}`\n```\n".format(
+                        ctx.command.qualified_name, ctx.guild.name, ctx.author, code
                     )
                     + error
                     + "\n```"
                 )
             else:
                 await channel.send(
-                    content="**Error in the command {}**, Located from `{}` by user `{}`".format(
-                        ctx.command.name, ctx.guild.name, ctx.author
-                    ),
+                    content="**Error in the command {}**, Located from `{}` by user `{}`\nReference: `{}`".format(
+                        ctx.command.qualified_name, ctx.guild.name, ctx.author, code
+                    )
+                    + "\n"
+                    + code,
                     file=discord.File(
                         fp=io.BytesIO(error.encode(errors="ignore")),
                         filename="error.log",
