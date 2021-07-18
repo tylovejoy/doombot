@@ -1,15 +1,10 @@
-import logging
 import sys
+from logging import getLogger
 
 import discord
-from database.BonusData import BonusData
-from database.HardcoreData import HardcoreData
-from database.MildcoreData import MildcoreData
-from database.TimeAttackData import TimeAttackData
-from disputils import BotEmbedPaginator
-from internal import confirmation, constants
-from internal.pb_utils import display_record
+from internal.database import BonusData, HardcoreData, MildcoreData, TimeAttackData
 from utils.embeds import doom_embed
+from utils.pb_utils import display_record
 from utils.views import Confirm, Paginator
 
 if len(sys.argv) > 1:
@@ -17,6 +12,8 @@ if len(sys.argv) > 1:
         from internal import constants_bot_test as constants_bot
 else:
     from internal import constants_bot_prod as constants_bot
+
+logger = getLogger(__name__)
 
 
 def category_sort(message):
