@@ -1,12 +1,10 @@
 import asyncio
 import logging
-import os
 from pathlib import Path
 
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
-from pretty_help import PrettyHelp
+from utils.pretty_help import PrettyHelp
 
 # Logging setup
 logger = logging.getLogger(__name__)
