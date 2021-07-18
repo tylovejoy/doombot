@@ -173,11 +173,6 @@ class Verification(discord.ui.View):
         self.stop()
 
 
-class Guide(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=120)
-
-
 class TournamentChoices(discord.ui.View):
     def __init__(self, author, no_all=False):
         super().__init__(timeout=120)
@@ -236,4 +231,64 @@ class TournamentChoicesNoAll(discord.ui.View):
     ):
         self.value = int(select.values[0])
         self.clear_items()
+        self.stop()
+
+
+class GuidePaginator(discord.ui.View):
+    def __init__(self, links: [str], author: discord.Member):
+        super().__init__(timeout=120)
+        self.pages = links
+        self.author = author
+        self._curr_page = 0
+        if len(self.pages) == 1:
+            self.first.disabled = True
+            self.back.disabled = True
+            self.next.disabled = True
+            self.last.disabled = True
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user == self.author:
+            return True
+        return False
+
+    @discord.ui.button(label="First", emoji="⏮")
+    async def first(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if len(self.pages) == 1:
+            button.disabled = True
+        self._curr_page = 0
+        await interaction.response.edit_message(content=self.pages[0], view=self)
+
+    @discord.ui.button(label="Back", emoji="◀")
+    async def back(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if len(self.pages) == 1:
+            button.disabled = True
+        if self._curr_page == 0:
+            self._curr_page = len(self.pages) - 1
+        else:
+            self._curr_page -= 1
+        await interaction.response.edit_message(
+            content=self.pages[self._curr_page], view=self
+        )
+
+    @discord.ui.button(label="Next", emoji="▶")
+    async def next(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if len(self.pages) == 1:
+            button.disabled = True
+        if self._curr_page == len(self.pages) - 1:
+            self._curr_page = 0
+        else:
+            self._curr_page += 1
+        await interaction.response.edit_message(
+            content=self.pages[self._curr_page], view=self
+        )
+
+    @discord.ui.button(label="Last", emoji="⏭")
+    async def last(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if len(self.pages) == 1:
+            button.disabled = True
+        self._curr_page = len(self.pages) - 1
+        await interaction.response.edit_message(content=self.pages[-1], view=self)
+
+    @discord.ui.button(label="Close", style=discord.ButtonStyle.red)
+    async def close(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.stop()

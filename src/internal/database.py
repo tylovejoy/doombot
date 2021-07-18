@@ -1,15 +1,15 @@
+from internal.database_init import instance
 from umongo import Document
 from umongo.fields import (
-    IntegerField,
-    StringField,
-    FloatField,
-    ListField,
+    BooleanField,
     DateTimeField,
     DictField,
-    BooleanField,
+    FloatField,
+    IntegerField,
+    ListField,
+    StringField,
+    UrlField,
 )
-
-from internal.database_init import instance
 
 
 @instance.register
@@ -57,6 +57,16 @@ class MapData(Document):
         """MongoDb database collection name."""
 
         collection_name = "MapData"
+
+
+@instance.register
+class Guides(Document):
+    code = StringField(require=True)
+    guide = ListField(UrlField(), required=False)
+    guide_owner = ListField(IntegerField(), required=False)
+
+    class Meta:
+        collection_name = "Guides"
 
 
 @instance.register

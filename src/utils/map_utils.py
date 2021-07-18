@@ -206,3 +206,10 @@ def map_type_check(m):
         if x not in constants.TYPES_OF_MAP:
             return
     return True
+
+
+async def guide_duplicate_check(guides, new_url):
+    for guide in guides:
+        if new_url == guide:
+            return True
+    return False
