@@ -375,9 +375,9 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
         await delete_messages(message_cache)
 
     @commands.command(
-        help="Edit the map code for a certain map code.\n"
-        "Only original posters and mods can edit a map code.",
-        brief="Edit the map code for a certain map code",
+        help="Edit the creator(s) for a certain map code.\n"
+        "Only original posters and mods can edit the creator(s).",
+        brief="Edit the creator(s) for a certain map code",
         aliases=["editcreators"],
     )
     async def editcreator(self, ctx, map_code, creator):
