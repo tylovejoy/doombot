@@ -4,7 +4,6 @@ from logging import getLogger
 from typing import List
 
 import discord
-from internal import constants
 from internal.database import WorldRecords
 
 if len(sys.argv) > 1:
