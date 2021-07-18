@@ -7,6 +7,7 @@ braceexpand==0.1.6
 chardet==3.0.4
 dateparser==1.0.0
 discord==1.0.1
+discord-ext-wizards==0.3.0
 discord.py @ git+https://github.com/Rapptz/discord.py.git@f14e584304d9d6676c90f8aa59d6e4be23d22a10
 disputils @ git+https://github.com/LiBa001/disputils@13fd04e88dac541a0964497139527e6aa9246fe0
 dnspython==2.1.0
@@ -19,7 +20,6 @@ marshmallow==3.8.0
 motor==2.3.0
 multidict==4.7.6
 natsort==7.1.1
-normal-api.py==1.0.0
 pymongo==3.11.0
 python-dateutil==2.8.1
 python-dotenv==0.14.0
