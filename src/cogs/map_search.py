@@ -1,3 +1,4 @@
+import asyncio
 import sys
 
 import discord
@@ -22,11 +23,6 @@ class MapSearch(commands.Cog, name="Map Search"):
         """Check if command is used in MAP_CHANNEL."""
         if ctx.channel.id == constants_bot.MAP_CHANNEL_ID or (ctx.guild is None):
             return True
-
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
-        if message.channel.id != constants_bot.MAP_CHANNEL_ID:
-            return
 
     @commands.command(
         aliases=constants.AYUTTHAYA[1:],
