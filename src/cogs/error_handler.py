@@ -136,11 +136,11 @@ class ErrorHandler(commands.Cog):
                 embed=discord.Embed(
                     description=f"<a:ChumpyNo:866364385554464768> {message}",
                     colour=discord.Colour.red(),
+                ).set_footer(
+                    text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
                 ),
                 mention_author=False,
                 delete_after=15,
-            ).set_footer(
-                text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
             )
 
         elif isinstance(error, commands.DisabledCommand):
@@ -149,22 +149,23 @@ class ErrorHandler(commands.Cog):
                     embed=discord.Embed(
                         description="<a:ChumpyNo:866364385554464768> This command has been disabled by one of our owners - Most likely due to a bug.",
                         colour=discord.Colour.red(),
+                    ).set_footer(
+                        text="Invoked by {}".format(ctx.author),
+                        icon_url=ctx.author.avatar,
                     ),
                     mention_author=False,
                     delete_after=15,
-                ).set_footer(
-                    text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
                 )
 
             return await ctx.message.reply(
                 embed=discord.Embed(
                     description="<a:ChumpyNo:866364385554464768> This command has been disabled. Re-enable it use it again!",
                     colour=discord.Colour.red(),
+                ).set_footer(
+                    text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
                 ),
                 mention_author=False,
                 delete_after=15,
-            ).set_footer(
-                text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
             )
 
         elif isinstance(error, commands.MissingRequiredArgument):
@@ -224,11 +225,11 @@ class ErrorHandler(commands.Cog):
                 embed=discord.Embed(
                     description=f"<a:ChumpyNo:866364385554464768> Member named **{error.argument}** was not found!",
                     colour=discord.Colour.red(),
+                ).set_footer(
+                    text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
                 ),
                 mention_author=False,
                 delete_after=15,
-            ).set_footer(
-                text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
             )
             ctx.command.reset_cooldown(ctx)
 
@@ -237,11 +238,11 @@ class ErrorHandler(commands.Cog):
                 embed=discord.Embed(
                     description=f"<a:ChumpyNo:866364385554464768> Member named **{error.argument}** was not found!",
                     colour=discord.Colour.red(),
+                ).set_footer(
+                    text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
                 ),
                 mention_author=False,
                 delete_after=15,
-            ).set_footer(
-                text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
             )
             ctx.command.reset_cooldown(ctx)
 
@@ -253,11 +254,11 @@ class ErrorHandler(commands.Cog):
                         error.argument
                     ),
                     colour=discord.Colour.red(),
+                ).set_footer(
+                    text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
                 ),
                 mention_author=False,
                 delete_after=15,
-            ).set_footer(
-                text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
             )
 
         elif isinstance(error, commands.errors.RoleNotFound):
@@ -268,11 +269,11 @@ class ErrorHandler(commands.Cog):
                         error.argument
                     ),
                     colour=discord.Colour.red(),
+                ).set_footer(
+                    text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
                 ),
                 mention_author=False,
                 delete_after=15,
-            ).set_footer(
-                text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
             )
 
         elif isinstance(error, commands.errors.CheckFailure):
@@ -281,11 +282,11 @@ class ErrorHandler(commands.Cog):
                 embed=discord.Embed(
                     description="<a:ChumpyNo:866364385554464768> Either you don't have permission to use this or you're in the wrong channel!",
                     colour=discord.Colour.red(),
+                ).set_footer(
+                    text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
                 ),
                 mention_author=False,
                 delete_after=15,
-            ).set_footer(
-                text="Invoked by {}".format(ctx.author), icon_url=ctx.author.avatar
             )
 
         else:
