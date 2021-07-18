@@ -10,7 +10,6 @@ Any violation to the license, will result in moderate action
 You are legally required to mention (original author, license, source and any changes made)
 """
 import asyncio
-import hashlib
 import io
 import traceback
 from inspect import Parameter
@@ -113,10 +112,6 @@ async def convert(time):
             return f"**{minutes}** Minutes and **{seconds}** Seconds."
         return f"**{minutes}** Minutes."
     return f"**{seconds}** Seconds."
-
-
-async def gen_code(name: str):
-    return hashlib.sha256(name.encode("ascii", errors="ignore")).hexdigest()
 
 
 class ErrorHandler(commands.Cog):
@@ -293,7 +288,6 @@ class ErrorHandler(commands.Cog):
             if ctx.command.name.lower() == "eval_fn":
                 return
 
-            code = await gen_code(ctx.command.name.lower())
             error = traceback.format_exception(
                 etype=type(error), value=error, tb=error.__traceback__
             )
@@ -311,19 +305,20 @@ class ErrorHandler(commands.Cog):
             channel = self.bot.get_channel(849878847310528523)
             if len(error) < 1850:
                 await channel.send(
-                    "**Error in the command {}**, Located from `{}` by user `{}`\nReference: `{}`\n```\n".format(
-                        ctx.command.qualified_name, ctx.guild.name, ctx.author, code
+                    "**Error in the command {}**, Located from `{}` by user `{}`\n```\n".format(
+                        ctx.command.qualified_name,
+                        ctx.guild.name,
+                        ctx.author,
                     )
                     + error
                     + "\n```"
                 )
             else:
                 await channel.send(
-                    content="**Error in the command {}**, Located from `{}` by user `{}`\nReference: `{}`".format(
-                        ctx.command.qualified_name, ctx.guild.name, ctx.author, code
+                    content="**Error in the command {}**, Located from `{}` by user `{}`\n".format(
+                        ctx.command.qualified_name, ctx.guild.name, ctx.author
                     )
-                    + "\n"
-                    + code,
+                    + "\n",
                     file=discord.File(
                         fp=io.BytesIO(error.encode(errors="ignore")),
                         filename="error.log",
@@ -332,15 +327,14 @@ class ErrorHandler(commands.Cog):
 
             try:
                 await ctx.send(
-                    "**An unknown error has occurred. It has been reported automatically!**\n**Your error code:** `{}`".format(
-                        code
-                    )
+                    "**An unknown error has occurred. It has been reported automatically!",
+                    delete_after=10,
                 )
             except discord.errors.Forbidden:
                 pass
 
         try:
-            await asyncio.sleep(15)
+            await asyncio.sleep(10)
             await ctx.message.delete()
         except discord.HTTPException:
             pass
