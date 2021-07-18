@@ -4,10 +4,9 @@ from logging import getLogger
 import internal.constants as constants
 from discord.ext import commands
 from disputils import MultipleChoice
-from internal.database import Guides, MapData
-from utils.embeds import doom_embed
+from internal.database import Guides
 from utils.map_utils import guide_duplicate_check
-from utils.views import Confirm, GuidePaginator, Paginator
+from utils.views import Confirm, GuidePaginator
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
