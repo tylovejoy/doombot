@@ -220,7 +220,6 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
                     await msg.edit(content="Verification error", view=verify)
 
         elif not view.value:
-            view.clear_items()
             await msg.edit(
                 content="Submission has not been accepted.",
                 view=view,
@@ -229,7 +228,6 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
             )
             await ctx.message.delete()
         elif view.value is None:
-            view.clear_items()
             await msg.edit(
                 content="Submission timed out! Submission has not been accepted.",
                 view=view,
