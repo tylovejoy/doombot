@@ -48,6 +48,10 @@ class MapGuides(commands.Cog, name="Map Guides"):
     async def submitguide(self, ctx: commands.Context, map_code: str, url: str):
         if ctx.guild is None:
             return
+
+        if ctx.channel.id != constants_bot.MAP_CHANNEL_ID:
+            return
+
         await ctx.message.delete()
         map_code = map_code.upper()
 
@@ -119,6 +123,10 @@ class MapGuides(commands.Cog, name="Map Guides"):
     async def deleteguide(self, ctx, map_code):
         if ctx.guild is None:
             return
+
+        if ctx.channel.id != constants_bot.MAP_CHANNEL_ID:
+            return
+
         await ctx.message.delete()
         map_code = map_code.upper()
         search: Guides = await Guides.find_one({"code": map_code})
