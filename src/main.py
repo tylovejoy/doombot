@@ -21,7 +21,7 @@ logger.addHandler(consoleHandle)
 
 def load_config():
     load_dotenv(join("..", ".env"))
-    with open("data/config.json", "r", encoding="utf-8-sig") as doc:
+    with open("src/data/config.json", "r", encoding="utf-8-sig") as doc:
         return json.load(doc)
 
 

@@ -1,9 +1,9 @@
 import asyncio
 import re
+from abc import ABCMeta
 from typing import List
 
 import discord
-from _abc import ABCMeta
 from discord.ext import commands
 
 
