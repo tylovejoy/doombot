@@ -2,6 +2,21 @@
 
 <!--next-version-placeholder-->
 
+## v2.3.2 (2021-07-18)
+### Fix
+* Refactored guides into separate cog ([`fee3d7b`](https://github.com/tylovejoy/doombot/commit/fee3d7b812370d57d4f8256868604fc5d85efd9a))
+* Removed extra logging files/lines ([`3f1ff16`](https://github.com/tylovejoy/doombot/commit/3f1ff16ebdcb77671d819d3d77289fa28a03fa9c))
+* Rearranged constants_bot_ files ([`3965606`](https://github.com/tylovejoy/doombot/commit/3965606287e2568eb3be1db87ea00527f8f7e7e1))
+* Build errors ([`be8a7bd`](https://github.com/tylovejoy/doombot/commit/be8a7bd3d94e78199eb48e0a1ef6bf5da8dc27c1))
+* Build errors ([`bd77206`](https://github.com/tylovejoy/doombot/commit/bd772064a4aea9e67f2f8d50e358cba04f43cc6b))
+* Build errors ([`3fdec5c`](https://github.com/tylovejoy/doombot/commit/3fdec5ced13fffa44a13013d55fdcdb1d8ade01a))
+* Build errors ([`285d43e`](https://github.com/tylovejoy/doombot/commit/285d43e5f2e2b26f6740de25abc82d1dd4249fae))
+* Build errors ([`b2c5330`](https://github.com/tylovejoy/doombot/commit/b2c53305cf8aa4339f70933d2598fedd0846e2be))
+* Build errors ([`91dcc83`](https://github.com/tylovejoy/doombot/commit/91dcc8380314c5287d1c9359b29893e59c3e5511))
+* Dockerfile fix ([`a958888`](https://github.com/tylovejoy/doombot/commit/a9588880c5b5f390e6df4db9afc8973e841f6e57))
+* Dockerfile fix ([`bb8a5b1`](https://github.com/tylovejoy/doombot/commit/bb8a5b17c467f14e955e6582c2b12d132ad55c8c))
+* Requirements.txt order ([`e9b880e`](https://github.com/tylovejoy/doombot/commit/e9b880e45f0b02244e960c5f5ac06fee3a6d439b))
+
 ## v2.3.1 (2021-07-18)
 ### Fix
 * CHANGELOG.md ([`fc1733a`](https://github.com/tylovejoy/doombot/commit/fc1733a29599383cb79584c25a1a82b4c8fe19a2))
