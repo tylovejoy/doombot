@@ -42,7 +42,7 @@ class Bot(commands.Bot):
         await asyncio.sleep(
             1
         )  # Ensure that on_ready has completed and finished printing
-        cogs = [x.stem for x in Path("cogs").glob("*.py")]
+        cogs = [x.stem for x in Path("src/cogs").glob("*.py")]
         logger.info("Loading extensions...")
         for extension in cogs:
             try:
