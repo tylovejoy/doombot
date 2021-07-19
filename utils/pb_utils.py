@@ -3,8 +3,9 @@ import datetime
 import re
 
 import discord
-import internal.constants as constants
 import pymongo
+
+import internal.constants as constants
 from internal.database import MapData, WorldRecords
 from utils.embeds import doom_embed
 from utils.views import Paginator

@@ -1,4 +1,3 @@
-from internal.database_init import instance
 from umongo import Document
 from umongo.fields import (
     BooleanField,
@@ -10,6 +9,8 @@ from umongo.fields import (
     StringField,
     UrlField,
 )
+
+from internal.database_init import instance
 
 
 @instance.register

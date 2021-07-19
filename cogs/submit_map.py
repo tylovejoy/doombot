@@ -3,6 +3,7 @@ import sys
 from logging import getLogger
 
 from discord.ext import commands
+
 from internal.constants import TYPES_OF_MAP
 from internal.database import MapData
 from utils.form import Form

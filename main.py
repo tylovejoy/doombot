@@ -4,8 +4,9 @@ import logging
 from os import getenv
 from os.path import join
 
-import internal.database_init
 from dotenv import load_dotenv
+
+import internal.database_init
 from internal.bot import Bot
 
 logger = logging.getLogger()
@@ -20,8 +21,8 @@ logger.addHandler(consoleHandle)
 
 
 def load_config():
-    load_dotenv(join("..", ".env"))
-    with open("src/data/config.json", "r", encoding="utf-8-sig") as doc:
+    load_dotenv(join("", ".env"))
+    with open("data/config.json", "r", encoding="utf-8-sig") as doc:
         return json.load(doc)
 
 

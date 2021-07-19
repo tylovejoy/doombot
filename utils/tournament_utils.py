@@ -2,6 +2,7 @@ import sys
 from logging import getLogger
 
 import discord
+
 from internal.database import BonusData, HardcoreData, MildcoreData, TimeAttackData
 from utils.embeds import doom_embed
 from utils.pb_utils import display_record

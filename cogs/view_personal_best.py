@@ -5,12 +5,13 @@ from logging import getLogger
 
 import bson
 import discord
-import internal.constants as constants
 import pymongo
 from discord.ext import commands
-from internal.database import MapData, WorldRecords
 from natsort import natsorted
 from pymongo.collation import Collation
+
+import internal.constants as constants
+from internal.database import MapData, WorldRecords
 from utils.embeds import doom_embed
 from utils.pb_utils import boards, display_record
 from utils.views import Paginator
