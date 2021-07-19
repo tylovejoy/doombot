@@ -1,13 +1,13 @@
 import asyncio
-import logging
 import re
 import sys
 
 import discord
 from aiostream import stream
 from discord.ext import commands
-from internal.database import WorldRecords
 from pymongo.collation import Collation
+
+from internal.database import WorldRecords
 from utils.embeds import doom_embed
 from utils.form import Form
 from utils.map_utils import map_code_regex

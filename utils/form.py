@@ -1,6 +1,6 @@
 import asyncio
 from logging import getLogger
-from typing import List, Callable, Any, NoReturn, Union, Optional
+from typing import Any, Callable, List, NoReturn, Optional, Union
 
 from discord.ext import commands
 

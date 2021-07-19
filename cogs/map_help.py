@@ -1,8 +1,9 @@
 import sys
 from logging import getLogger
 
-import internal.constants as constants
 from discord.ext import commands
+
+import internal.constants as constants
 from internal.database import Guides
 from utils.map_utils import guide_duplicate_check
 from utils.multiple_choice import MultipleChoice

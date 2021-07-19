@@ -2,8 +2,9 @@ import asyncio
 import sys
 
 import discord
-import internal.constants as constants
 from discord.ext import commands
+
+import internal.constants as constants
 from utils.map_utils import convert_short_types, normal_map_query, searchmap
 
 if len(sys.argv) > 1:
