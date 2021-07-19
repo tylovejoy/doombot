@@ -62,17 +62,13 @@ class Tournament(commands.Cog, name="Tournament"):
         self.guild = self.bot.get_guild(constants_bot.GUILD_ID)
 
         self.ta_channel = self.guild.get_channel(constants_bot.TA_CHANNEL_ID)
-
         self.mc_channel = self.guild.get_channel(constants_bot.MC_CHANNEL_ID)
-
         self.hc_channel = self.guild.get_channel(constants_bot.HC_CHANNEL_ID)
-
         self.bonus_channel = self.guild.get_channel(constants_bot.BONUS_CHANNEL_ID)
-
         self.info_channel = self.guild.get_channel(
             constants_bot.TOURNAMENT_INFO_CHANNEL_ID
         )
-        logger.info("test5")
+
         self.export_channel = self.guild.get_channel(constants_bot.EXPORT_SS_CHANNEL_ID)
 
         self.ta_role = self.guild.get_role(constants_bot.TA_ROLE_ID)
