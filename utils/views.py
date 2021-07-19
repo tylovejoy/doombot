@@ -155,9 +155,7 @@ class Verification(discord.ui.View):
             return False
         return True
 
-    @discord.ui.button(
-        label="Verify", style=discord.ButtonStyle.green, custom_id="verify"
-    )
+    @discord.ui.button(label="Verify", style=discord.ButtonStyle.green)
     async def verify(self, button: discord.ui.Button, interaction: discord.Interaction):
         search = await WorldRecords.find_one({"message_id": self.message.id})
         guild = self.bot.get_guild(constants_bot.GUILD_ID)
@@ -170,6 +168,24 @@ class Verification(discord.ui.View):
 
         search.verified = True
         self.verify = True
+        self.clear_items()
+        await search.commit()
+        self.stop()
+
+    @discord.ui.button(label="Reject", style=discord.ButtonStyle.red)
+    async def reject(self, button: discord.ui.Button, interaction: discord.Interaction):
+        search = await WorldRecords.find_one({"message_id": self.message.id})
+        guild = self.bot.get_guild(constants_bot.GUILD_ID)
+        hidden_channel = guild.get_channel(constants_bot.HIDDEN_VERIFICATION_CHANNEL)
+        try:
+            hidden_msg = await hidden_channel.fetch_message(search.hidden_id)
+            await hidden_msg.delete()
+        except discord.HTTPException:
+            pass
+
+        search.verified = False
+        self.verify = False
+        self.clear_items()
         await search.commit()
         self.stop()
 

@@ -69,7 +69,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
                 key="level",
             )
             form.add_question(
-                question="What is your personal best record (HH:MM:SS.SS format)?",
+                question="What is your personal best record (HH:MM:SS.ss format)?",
                 key="record",
                 validation=time_convert,
             )
@@ -99,7 +99,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
                 level_checker[entry.level.upper()] = None
 
         # init embed
-        embed = doom_embed(title="New Submission")
+        embed = doom_embed(title=f"New Submission - {ctx.author.name}")
         embed.add_field(
             name="Currently submitted level names:",
             value=f"{', '.join(level_checker) if level_checker else 'N/A'}",
@@ -155,7 +155,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
         view = Confirm("Submission", ctx.message.author)
         msg = await ctx.send("Is this correct?", embed=embed, view=view, file=img)
         await view.wait()
-
+        embed.remove_field(0)
         if view.value:
             channel = self.bot.get_channel(constants_bot.HIDDEN_VERIFICATION_CHANNEL)
 
@@ -208,14 +208,18 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
                                 await ctx.channel.send(
                                     f"Your rank is {rank + 1} on the unverified scoreboard."
                                 )
+
                 verify = Verification(msg, self.bot)
                 await ctx.message.delete()
-                await msg.edit(content="Waiting to be verified...", view=verify)
+                await msg.edit(
+                    content="Waiting to be verified...", embed=embed, view=verify
+                )
                 await verify.wait()
 
-                verify.clear_items()
                 if verify.verify:
                     await msg.edit(content="Verified.", view=verify)
+                elif not verify.verify:
+                    await msg.edit(content="Verification rejected", view=verify)
                 else:
                     await msg.edit(content="Verification error", view=verify)
 
@@ -223,7 +227,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
             await msg.edit(
                 content="Submission has not been accepted.",
                 view=view,
-                embed=None,
+                embed=embed,
                 delete_after=15,
             )
             await ctx.message.delete()
@@ -231,7 +235,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
             await msg.edit(
                 content="Submission timed out! Submission has not been accepted.",
                 view=view,
-                embed=None,
+                embed=embed,
                 delete_after=15,
             )
             await ctx.message.delete()
