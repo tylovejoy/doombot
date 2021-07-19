@@ -6,7 +6,6 @@ from logging import getLogger
 import dateparser
 import discord
 from discord.ext import commands, tasks
-from disputils import MultipleChoice
 from internal.database import (
     BonusData,
     HardcoreData,
@@ -15,6 +14,7 @@ from internal.database import (
     TimeAttackData,
 )
 from utils.embeds import doom_embed
+from utils.multiple_choice import MultipleChoice
 from utils.pb_utils import display_record, time_convert
 from utils.tournament_utils import (
     category_sort,

@@ -3,9 +3,9 @@ from logging import getLogger
 
 import internal.constants as constants
 from discord.ext import commands
-from disputils import MultipleChoice
 from internal.database import Guides
 from utils.map_utils import guide_duplicate_check
+from utils.multiple_choice import MultipleChoice
 from utils.views import Confirm, GuidePaginator
 
 if len(sys.argv) > 1:

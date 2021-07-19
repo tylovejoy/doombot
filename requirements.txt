@@ -8,7 +8,6 @@ chardet==3.0.4
 dateparser==1.0.0
 discord==1.0.1
 discord-ext-wizards==0.3.0
-disputils @ git+https://github.com/LiBa001/disputils@13fd04e88dac541a0964497139527e6aa9246fe0
 discord.py @ git+https://github.com/Rapptz/discord.py.git@f14e584304d9d6676c90f8aa59d6e4be23d22a10
 dnspython==2.1.0
 emoji==1.2.0
