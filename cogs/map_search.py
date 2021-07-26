@@ -1,5 +1,6 @@
 import asyncio
 import sys
+from logging import getLogger
 
 import discord
 from discord.ext import commands
@@ -13,6 +14,8 @@ if len(sys.argv) > 1:
 else:
     from internal import constants_bot_prod as constants_bot
 
+logger = getLogger(__name__)
+
 
 class MapSearch(commands.Cog, name="Map Search"):
     """A collection of map search commands."""
@@ -24,6 +27,18 @@ class MapSearch(commands.Cog, name="Map Search"):
         """Check if command is used in MAP_CHANNEL."""
         if ctx.channel.id == constants_bot.MAP_CHANNEL_ID or (ctx.guild is None):
             return True
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        if message.channel.id in (
+            constants_bot.MAP_CHANNEL_ID,
+            constants_bot.MAP_SUBMIT_CHANNEL_ID,
+        ):
+            await asyncio.sleep(300)
+            try:
+                await message.delete()
+            except discord.HTTPException:
+                pass
 
     @commands.command(
         aliases=constants.AYUTTHAYA[1:],
