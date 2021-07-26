@@ -4,7 +4,7 @@ from logging import getLogger
 
 from discord.ext import commands
 
-from internal.constants import TYPES_OF_MAP
+from internal.constants import PRETTY_NAMES, TYPES_OF_MAP
 from internal.database import MapData
 from utils.form import Form
 from utils.map_utils import (
@@ -170,7 +170,10 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
         elif view.value:  # Accept
             await submission.commit()
             new_map_channel = self.bot.get_channel(constants_bot.NEW_MAPS_CHANNEL_ID)
-            await new_map_channel.send(embed=embed)
+            new_map = await new_map_channel.send(embed=embed)
+            await new_map.start_thread(
+                name=f"{map_code} - {PRETTY_NAMES[new_map_name]} by {creator}"
+            )
         else:  # Reject
             pass
 
