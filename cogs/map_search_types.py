@@ -163,6 +163,7 @@ class MapSearchTypes(commands.Cog, name="Map Search Types"):
 
         Display constants_bot.NEWEST_MAPS_LIMIT amount of maps that were submitted
         """
+        await ctx.message.delete()
         embed = doom_embed(title="Newest Maps")
 
         row = 0
@@ -189,12 +190,9 @@ class MapSearchTypes(commands.Cog, name="Map Search Types"):
             )
             row = 1
         if row:
-            m = await ctx.send(embed=embed)
+            await ctx.send(embed=embed, delete_after=60)
         else:
-            m = await ctx.send("No latest maps!")
-        await asyncio.sleep(60)
-        await m.delete()
-        await ctx.message.delete()
+            await ctx.send("No latest maps!", delete_after=10)
 
     @commands.command(
         help="Search for maps by a specific creator.\n<creator> is not case-sensitive and can contain a portion of a name.",

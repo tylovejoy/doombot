@@ -90,14 +90,10 @@ async def searchmap(
     elif row == 1:
         await ctx.send(embed=embeds[0], delete_after=120)
     else:
-        m = await ctx.send(
-            f"Nothing exists for {map_name or creator or map_code or map_type}!"
+        await ctx.send(
+            f"Nothing exists for {map_name or creator or map_code or map_type}!",
+            delete_after=10,
         )
-        await asyncio.sleep(10)
-        try:
-            await m.delete()
-        except discord.HTTPException:
-            pass
 
 
 def normal_map_query(map_name, map_type=""):
