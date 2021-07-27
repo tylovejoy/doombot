@@ -2,6 +2,15 @@
 
 <!--next-version-placeholder-->
 
+## v2.4.0 (2021-07-27)
+### Feature
+* Added auto message delete in #maps channel ([`c644d2d`](https://github.com/tylovejoy/doombot/commit/c644d2d00fc3520dea9ee9f948a765adfeb38edd))
+
+### Fix
+* Delete author message first ([`2ae75b5`](https://github.com/tylovejoy/doombot/commit/2ae75b5358822346c279c4e050741099f2aa625a))
+* Limited submit/ delete guides commands ([`db093b3`](https://github.com/tylovejoy/doombot/commit/db093b31654fd122d5838a80c50b8bec42d0b482))
+* Added reject verification button and edited various submission things ([`0470443`](https://github.com/tylovejoy/doombot/commit/0470443a79da59a17270bfb8ff8b657ba58043b1))
+
 ## v2.3.2 (2021-07-18)
 ### Fix
 * Refactored guides into separate cog ([`fee3d7b`](https://github.com/tylovejoy/doombot/commit/fee3d7b812370d57d4f8256868604fc5d85efd9a))
