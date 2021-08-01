@@ -171,9 +171,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
             await submission.commit()
             new_map_channel = self.bot.get_channel(constants_bot.NEW_MAPS_CHANNEL_ID)
             new_map = await new_map_channel.send(embed=embed)
-            await new_map.start_thread(
-                name=f"{map_code} - {PRETTY_NAMES[new_map_name]} by {creator}"
-            )
+            await new_map.start_thread(name="Discuss this map here.")
         else:  # Reject
             pass
 
