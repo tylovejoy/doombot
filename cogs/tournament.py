@@ -14,7 +14,7 @@ from internal.database import (
     Schedule,
     TimeAttackData,
 )
-from utils.embeds import doom_embed
+from utils.embeds import doom_embed, hall_of_fame
 from utils.multiple_choice import MultipleChoice
 from utils.pb_utils import display_record, time_convert
 from utils.tournament_utils import (
@@ -1039,6 +1039,43 @@ class Tournament(commands.Cog, name="Tournament"):
         await response.delete()
         await question.delete()
         await confirmation_msg.delete()
+
+    @commands.command(help="", brief="", aliases=["hof", "fame"])
+    async def halloffame(self, ctx: commands.Context):
+        await ctx.message.delete()
+        embed = hall_of_fame(
+            "Bracket Winners",
+            desc="These are the past winners of the bracket tournaments.",
+        )
+
+        embed.add_field(
+            name="__**Time Attack**__",
+            value=(
+                "*1st Bracket Winner*\n"
+                "<@593838073012289536>\n"
+                "*2nd Bracket Winner*\n"
+                "<@593838073012289536>\n"
+            ),
+            inline=False,
+        )
+
+        embed.add_field(
+            name="__**Mildcore**__",
+            value=("*1st Bracket Winner*\n" "<@593838073012289536>\n"),
+        )
+
+        embed.add_field(
+            name="__**Hardcore**__",
+            value=(
+                "*1st Bracket Winner*\n"
+                "<@294502010445758464>\n"
+                "*2nd Bracket Winner*\n"
+                "@Jazzy\n"
+            ),
+            inline=False,
+        )
+
+        await ctx.send(embed=embed, delete_after=60)
 
 
 def setup(bot):
