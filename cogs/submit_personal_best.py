@@ -210,7 +210,11 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
                                 )
 
                 verify = Verification(msg, self.bot)
-                await ctx.message.delete()
+
+                try:
+                    await ctx.message.delete()
+                except Exception:
+                    pass
                 await msg.edit(
                     content="Waiting to be verified...", embed=embed, view=verify
                 )

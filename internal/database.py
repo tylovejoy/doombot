@@ -150,3 +150,23 @@ class WorldRecords(Document):
         """MongoDb database collection name."""
 
         collection_name = "WorldRecords"
+
+
+@instance.register
+class Stars(Document):
+    """Starboard database document."""
+
+    message_id = IntegerField(required=True)
+    stars = IntegerField(required=True)
+    jump = StringField(required=True)
+    starboard_id = IntegerField(required=True)
+    reacted = ListField(IntegerField())
+
+    class Meta:
+        """MongoDb database collection name."""
+
+        collection_name = "Starboard"
+
+    @classmethod
+    async def search(cls, _id):
+        await cls.find_one({"message_id": _id})
