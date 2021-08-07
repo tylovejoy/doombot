@@ -1043,36 +1043,27 @@ class Tournament(commands.Cog, name="Tournament"):
     @commands.command(help="", brief="", aliases=["hof", "fame"])
     async def halloffame(self, ctx: commands.Context):
         await ctx.message.delete()
+        guild: discord.Guild = self.bot.get_guild(constants_bot.GUILD_ID)
+        ta = guild.get_role(constants_bot.TA_CHAMP)
+        mc = guild.get_role(constants_bot.MC_CHAMP)
+        hc = guild.get_role(constants_bot.HC_CHAMP)
+
+        desc = (
+            f"{ta.mention}\n"
+            "`1st` <@593838073012289536>\n"
+            "`2nd` <@593838073012289536>\n"
+            "\n\n"
+            f"{mc.mention}\n"
+            "`1st` <@593838073012289536>\n"
+            "\n\n"
+            f"{hc.mention}\n"
+            "`1st` <@294502010445758464>\n"
+            "`2nd` @Jazzy\n"
+        )
+
         embed = hall_of_fame(
             "Bracket Winners",
-            desc="These are the past winners of the bracket tournaments.",
-        )
-
-        embed.add_field(
-            name="__**Time Attack**__",
-            value=(
-                "*1st Bracket Winner*\n"
-                "<@593838073012289536>\n"
-                "*2nd Bracket Winner*\n"
-                "<@593838073012289536>\n"
-            ),
-            inline=False,
-        )
-
-        embed.add_field(
-            name="__**Mildcore**__",
-            value=("*1st Bracket Winner*\n" "<@593838073012289536>\n"),
-        )
-
-        embed.add_field(
-            name="__**Hardcore**__",
-            value=(
-                "*1st Bracket Winner*\n"
-                "<@294502010445758464>\n"
-                "*2nd Bracket Winner*\n"
-                "@Jazzy\n"
-            ),
-            inline=False,
+            desc=desc,
         )
 
         await ctx.send(embed=embed, delete_after=60)
