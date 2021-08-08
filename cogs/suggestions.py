@@ -70,8 +70,9 @@ class Suggestions(commands.Cog, name="Suggestions"):
                 description=message.content,
                 color=0xF7BD00,
             )
-            user: discord.Member = self.bot.get_user(payload.user_id)
-            embed.set_author(name=user.name, icon_url=user.avatar.url)
+            embed.set_author(
+                name=message.author.name, icon_url=message.author.avatar.url
+            )
             embed.add_field(name="Original", value=f"[Jump!]({entry.jump})")
             starboard_message: discord.Message = await self.starboard_channel.send(
                 f"{star_emoji(entry.stars)} **{entry.stars}**",
