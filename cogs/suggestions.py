@@ -31,6 +31,8 @@ class Suggestions(commands.Cog, name="Suggestions"):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
+        if message.channel.id != constants_bot.SUGGESTIONS_CHANNEL_ID:
+            return
         await message.add_reaction(emoji="<:upper:787788134620332063>")
 
     @commands.Cog.listener()
