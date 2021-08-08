@@ -222,6 +222,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
 
                 if verify.verify:
                     await msg.edit(content="Verified.", view=verify)
+                    await msg.add_reaction(emoji="<:upper:787788134620332063>")
                 elif not verify.verify:
                     await msg.edit(content="Verification rejected", view=verify)
                 else:
