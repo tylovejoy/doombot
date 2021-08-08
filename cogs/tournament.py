@@ -13,6 +13,7 @@ from internal.database import (
     MildcoreData,
     Schedule,
     TimeAttackData,
+    TopThree,
 )
 from utils.embeds import doom_embed, hall_of_fame
 from utils.multiple_choice import MultipleChoice
@@ -27,7 +28,7 @@ from utils.tournament_utils import (
     tournament_boards,
 )
 from utils.tourrnament_wizard import TournamentWizard
-from utils.views import Confirm, TournamentChoices, TournamentChoicesNoAll
+from utils.views import Confirm, Paginator, TournamentChoices, TournamentChoicesNoAll
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -150,6 +151,18 @@ class Tournament(commands.Cog, name="Tournament"):
 
     async def _end_round(self, mentions):
         list_mentions = mentions_to_list(mentions)
+
+        # await TopThree.collection.drop()
+        #
+        # top_three = TopThree(
+        #     **{
+        #         "ta_podium": [0],
+        #         "mc_podium": [0],
+        #         "hc_podium": [0],
+        #         "bonus_podium": [0],
+        #     }
+        # )
+        # await top_three.commit()
 
         bracket = False
         if constants_bot.BRACKET_TOURNAMENT_ROLE_ID in list_mentions:
@@ -1048,7 +1061,7 @@ class Tournament(commands.Cog, name="Tournament"):
         mc = guild.get_role(constants_bot.MC_CHAMP)
         hc = guild.get_role(constants_bot.HC_CHAMP)
 
-        desc = (
+        bracket_desc = (
             f"{ta.mention}\n"
             "`1st` <@593838073012289536>\n"
             "`2nd` <@593838073012289536>\n"
@@ -1061,12 +1074,68 @@ class Tournament(commands.Cog, name="Tournament"):
             "`2nd` @Jazzy\n"
         )
 
-        embed = hall_of_fame(
+        bracket = hall_of_fame(
             "Bracket Winners",
-            desc=desc,
+            desc=bracket_desc,
         )
 
-        await ctx.send(embed=embed, delete_after=60)
+        top_three = await TopThree.find_one({})
+        ta_podium = []
+        for i, _id in enumerate(top_three.ta_podium):
+            if i == 0:
+                continue
+            member = guild.get_member(int(_id))
+            ta_podium.append(f"`{make_ordinal(i)}` {member.mention}")
+        mc_podium = []
+        for i, _id in enumerate(top_three.mc_podium):
+            if i == 0:
+                continue
+            member = guild.get_member(int(_id))
+            mc_podium.append(f"`{make_ordinal(i)}` {member.mention}")
+        hc_podium = []
+        for i, _id in enumerate(top_three.hc_podium):
+            if i == 0:
+                continue
+            member = guild.get_member(int(_id))
+            hc_podium.append(f"`{make_ordinal(i)}` {member.mention}")
+        bonus_podium = []
+        for i, _id in enumerate(top_three.bonus_podium):
+            if i == 0:
+                continue
+            member = guild.get_member(int(_id))
+            bonus_podium.append(f"`{make_ordinal(i)}` {member.mention}")
+
+        top_three_desc = (
+            "__Time Attack__\n" + "\n".join(ta_podium) + f"\n\n"
+            "__Mildcore__\n" + "\n".join(mc_podium) + "\n\n"
+            "__Hardcore__\n" + "\n".join(hc_podium) + "\n\n"
+            "__Bonus__\n" + "\n".join(bonus_podium)
+        )
+
+        top_three = hall_of_fame(
+            "Weekly Tournament - Top 3",
+            desc=top_three_desc,
+        )
+        view = Paginator([bracket, top_three], ctx.author)
+        paginator = await ctx.send(embed=view.formatted_pages[0], view=view)
+        await view.wait()
+        await paginator.delete()
+
+
+def make_ordinal(n):
+    """
+    Convert an integer into its ordinal representation::
+
+        make_ordinal(0)   => '0th'
+        make_ordinal(3)   => '3rd'
+        make_ordinal(122) => '122nd'
+        make_ordinal(213) => '213th'
+    """
+    n = int(n)
+    suffix = ["th", "st", "nd", "rd", "th"][min(n % 10, 4)]
+    if 11 <= (n % 100) <= 13:
+        suffix = "th"
+    return str(n) + suffix
 
 
 def setup(bot):

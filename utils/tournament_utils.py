@@ -3,7 +3,13 @@ from logging import getLogger
 
 import discord
 
-from internal.database import BonusData, HardcoreData, MildcoreData, TimeAttackData
+from internal.database import (
+    BonusData,
+    HardcoreData,
+    MildcoreData,
+    TimeAttackData,
+    TopThree,
+)
 from utils.embeds import doom_embed
 from utils.pb_utils import display_record
 from utils.views import Confirm, Paginator
@@ -98,6 +104,8 @@ async def tournament_boards(category, ctx=None, guild=None):
 
 
 async def exporter(category, channel, ctx=None, guild=None):
+    top_three: TopThree = await TopThree.find_one({})
+
     if category == "TIMEATTACK":
         _data_category = TimeAttackData
     elif category == "MILDCORE":
@@ -107,7 +115,21 @@ async def exporter(category, channel, ctx=None, guild=None):
     else:  # "BONUS"
         _data_category = BonusData
 
+    count = 0
     async for entry in _data_category.find().sort("record", 1):
+
+        if count < 3:
+            if category == "TIMEATTACK":
+                top_three.ta_podium = top_three.ta_podium + [entry.posted_by]
+            elif category == "MILDCORE":
+                top_three.mc_podium = top_three.mc_podium + [entry.posted_by]
+            elif category == "HARDCORE":
+                top_three.hc_podium = top_three.hc_podium + [entry.posted_by]
+            else:  # "BONUS"
+                top_three.bonus_podium = top_three.bonus_podium + [entry.posted_by]
+
+            await top_three.commit()
+
         if ctx:
             username = discord.utils.find(
                 lambda m: m.id == entry.posted_by, ctx.guild.members
@@ -124,6 +146,7 @@ async def exporter(category, channel, ctx=None, guild=None):
         embed.add_field(name=category, value=f"{display_record(entry.record)}")
         embed.set_image(url=entry.attachment_url)
         await channel.send(embed=embed)
+        count += 1
 
 
 async def single_exporter(ctx, category, user: discord.Member = None):
