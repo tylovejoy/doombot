@@ -34,7 +34,7 @@ class Suggestions(commands.Cog, name="Suggestions"):
         self, payload: discord.RawReactionActionEvent
     ) -> Optional[None]:
         if (
-            payload.channel_id != self.suggestion_channel.id
+            payload.channel_id != constants_bot.SUGGESTIONS_CHANNEL_ID
             and payload.emoji != "<:upper:787788134620332063>"
         ):
             return
