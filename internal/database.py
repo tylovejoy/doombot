@@ -169,4 +169,39 @@ class Stars(Document):
 
     @classmethod
     async def search(cls, _id):
-        await cls.find_one({"message_id": _id})
+        return await cls.find_one({"message_id": _id})
+
+
+@instance.register
+class SuggestionStars(Document):
+    """SuggestionStars database document."""
+
+    message_id = IntegerField(required=True)
+    stars = IntegerField(required=True)
+    jump = StringField(required=True)
+    starboard_id = IntegerField(required=True)
+    reacted = ListField(IntegerField())
+
+    class Meta:
+        """MongoDb database collection name."""
+
+        collection_name = "Suggestions"
+
+    @classmethod
+    async def search(cls, _id):
+        return await cls.find_one({"message_id": _id})
+
+
+@instance.register
+class TopThree(Document):
+    """Top Three (podium) for weekly tournaments database document."""
+
+    ta_podium = ListField(IntegerField())
+    mc_podium = ListField(IntegerField())
+    hc_podium = ListField(IntegerField())
+    bonus_podium = ListField(IntegerField())
+
+    class Meta:
+        """MongoDb database collection name."""
+
+        collection_name = "TopThree"
