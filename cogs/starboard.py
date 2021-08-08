@@ -50,9 +50,11 @@ class Starboard(commands.Cog, name="Starboard"):
     async def on_raw_reaction_add(
         self, payload: discord.RawReactionActionEvent
     ) -> Optional[None]:
-        if (
-            payload.channel_id not in self.channel_map.keys()
-        ) and payload.emoji != "<:upper:787788134620332063>":
+        if payload.user_id == constants_bot.BOT_ID:
+            return
+        if payload.channel_id not in self.channel_map.keys():
+            return
+        if payload.emoji != "<:upper:787788134620332063>":
             return
 
         # entry: Stars = await Stars.find_one({"message_id": payload.message_id})
@@ -79,7 +81,7 @@ class Starboard(commands.Cog, name="Starboard"):
         entry.reacted = entry.reacted + [payload.user_id]
         await entry.commit()
 
-        if entry.stars < 4:
+        if entry.stars < 9:
             return
 
         message = self.channel_map[payload.channel_id].get_partial_message(

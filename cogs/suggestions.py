@@ -30,13 +30,18 @@ class Suggestions(commands.Cog, name="Suggestions"):
         )
 
     @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        await message.add_reaction(emoji="<:upper:787788134620332063>")
+
+    @commands.Cog.listener()
     async def on_raw_reaction_add(
         self, payload: discord.RawReactionActionEvent
     ) -> Optional[None]:
-        if (
-            payload.channel_id != constants_bot.SUGGESTIONS_CHANNEL_ID
-            and payload.emoji != "<:upper:787788134620332063>"
-        ):
+        if payload.user_id == constants_bot.BOT_ID:
+            return
+        if payload.channel_id != constants_bot.SUGGESTIONS_CHANNEL_ID:
+            return
+        if payload.emoji != "<:upper:787788134620332063>":
             return
 
         entry: SuggestionStars = await SuggestionStars.search(payload.message_id)
@@ -58,7 +63,7 @@ class Suggestions(commands.Cog, name="Suggestions"):
         entry.reacted = entry.reacted + [payload.user_id]
         await entry.commit()
 
-        if entry.stars < 4:
+        if entry.stars < 9:
             return
 
         message: discord.Message = await self.suggestion_channel.get_partial_message(
