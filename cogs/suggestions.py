@@ -43,11 +43,12 @@ class Suggestions(commands.Cog, name="Suggestions"):
             return
         if payload.channel_id != constants_bot.SUGGESTIONS_CHANNEL_ID:
             return
-        if payload.emoji != "<:upper:787788134620332063>":
+        if payload.emoji != discord.PartialEmoji.from_str(
+            "<:upper:787788134620332063>"
+        ):
             return
 
         entry: SuggestionStars = await SuggestionStars.search(payload.message_id)
-
         if entry is None:
             entry = SuggestionStars(
                 **{
@@ -64,14 +65,13 @@ class Suggestions(commands.Cog, name="Suggestions"):
         entry.stars += 1
         entry.reacted = entry.reacted + [payload.user_id]
         await entry.commit()
-
         if entry.stars < 6:
             return
 
         message: discord.Message = await self.suggestion_channel.get_partial_message(
             payload.message_id
         ).fetch()
-
+        logger.info(message)
         if entry.starboard_id == 0:
             embed = discord.Embed(
                 description=message.content,

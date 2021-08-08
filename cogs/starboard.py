@@ -54,7 +54,9 @@ class Starboard(commands.Cog, name="Starboard"):
             return
         if payload.channel_id not in self.channel_map.keys():
             return
-        if payload.emoji != "<:upper:787788134620332063>":
+        if payload.emoji != discord.PartialEmoji.from_str(
+            "<:upper:787788134620332063>"
+        ):
             return
 
         # entry: Stars = await Stars.find_one({"message_id": payload.message_id})
