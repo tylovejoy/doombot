@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 
 from internal.database import SuggestionStars
+from utils.utilities import star_emoji
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -14,17 +15,6 @@ else:
     from internal import constants_bot_prod as constants_bot
 
 logger = getLogger(__name__)
-
-
-def star_emoji(stars):
-    if 5 > stars >= 0:
-        return "\N{WHITE MEDIUM STAR}"
-    elif 10 > stars >= 5:
-        return "\N{GLOWING STAR}"
-    elif 25 > stars >= 10:
-        return "\N{DIZZY SYMBOL}"
-    else:
-        return "\N{SPARKLES}"
 
 
 class Suggestions(commands.Cog, name="Suggestions"):
@@ -43,7 +33,10 @@ class Suggestions(commands.Cog, name="Suggestions"):
     async def on_raw_reaction_add(
         self, payload: discord.RawReactionActionEvent
     ) -> Optional[None]:
-        if payload.channel_id != self.suggestion_channel.id and payload.emoji != "⭐":
+        if (
+            payload.channel_id != self.suggestion_channel.id
+            and payload.emoji != "<:upper:787788134620332063>"
+        ):
             return
 
         entry: SuggestionStars = await SuggestionStars.search(payload.message_id)
@@ -74,24 +67,28 @@ class Suggestions(commands.Cog, name="Suggestions"):
 
         if entry.starboard_id == 0:
             embed = discord.Embed(
-                description=(message.content),
+                description=message.content,
                 color=0xF7BD00,
             )
             user: discord.Member = self.bot.get_user(payload.user_id)
             embed.set_author(name=user.name, icon_url=user.avatar.url)
             embed.add_field(name="Original", value=f"[Jump!]({entry.jump})")
-            starboard_message = await self.starboard_channel.send(
-                f"{star_emoji(entry.stars)} **{entry.stars}** {message.channel.mention}",
+            starboard_message: discord.Message = await self.starboard_channel.send(
+                f"{star_emoji(entry.stars)} **{entry.stars}**",
                 embed=embed,
             )
             entry.starboard_id = starboard_message.id
             await entry.commit()
+            await starboard_message.start_thread(
+                name=message.content[:100], auto_archive_duration=1440
+            )
+
         else:
             starboard_message = self.starboard_channel.get_partial_message(
                 entry.starboard_id
             )
             await starboard_message.edit(
-                content=f"{star_emoji(entry.stars)} **{entry.stars}** {message.channel.mention}"
+                content=f"{star_emoji(entry.stars)} **{entry.stars}**"
             )
 
 

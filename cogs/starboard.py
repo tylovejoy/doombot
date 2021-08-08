@@ -7,8 +7,8 @@ import discord
 from discord.ext import commands
 
 from internal.database import Stars, WorldRecords
-from utils.embeds import doom_embed
 from utils.pb_utils import display_record
+from utils.utilities import star_emoji
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -17,17 +17,6 @@ else:
     from internal import constants_bot_prod as constants_bot
 
 logger = getLogger(__name__)
-
-
-def star_emoji(stars):
-    if 5 > stars >= 0:
-        return "\N{WHITE MEDIUM STAR}"
-    elif 10 > stars >= 5:
-        return "\N{GLOWING STAR}"
-    elif 25 > stars >= 10:
-        return "\N{DIZZY SYMBOL}"
-    else:
-        return "\N{SPARKLES}"
 
 
 class Starboard(commands.Cog, name="Starboard"):
@@ -61,7 +50,9 @@ class Starboard(commands.Cog, name="Starboard"):
     async def on_raw_reaction_add(
         self, payload: discord.RawReactionActionEvent
     ) -> Optional[None]:
-        if (payload.channel_id not in self.channel_map.keys()) and payload.emoji != "⭐":
+        if (
+            payload.channel_id not in self.channel_map.keys()
+        ) and payload.emoji != "<:upper:787788134620332063>":
             return
 
         # entry: Stars = await Stars.find_one({"message_id": payload.message_id})
