@@ -83,7 +83,7 @@ class Starboard(commands.Cog, name="Starboard"):
         entry.reacted = entry.reacted + [payload.user_id]
         await entry.commit()
 
-        if entry.stars < 9:
+        if entry.stars < 5:
             return
 
         message = self.channel_map[payload.channel_id].get_partial_message(
