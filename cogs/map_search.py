@@ -28,8 +28,8 @@ class MapSearch(commands.Cog, name="Map Search"):
         if ctx.channel.id == constants_bot.MAP_CHANNEL_ID or (ctx.guild is None):
             return True
 
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
+    @commands.Cog.listener(name="on_message")
+    async def delete_stale_messages(self, message: discord.Message):
         if message.channel.id in (
             constants_bot.MAP_CHANNEL_ID,
             constants_bot.MAP_SUBMIT_CHANNEL_ID,

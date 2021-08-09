@@ -29,14 +29,14 @@ class Suggestions(commands.Cog, name="Suggestions"):
             constants_bot.SUGGESTIONS_STARBOARD_ID
         )
 
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
+    @commands.Cog.listener(name="on_message")
+    async def add_react_suggestion(self, message: discord.Message):
         if message.channel.id != constants_bot.SUGGESTIONS_CHANNEL_ID:
             return
         await message.add_reaction(emoji="<:upper:787788134620332063>")
 
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(
+    @commands.Cog.listener(name="on_raw_reaction_add")
+    async def suggestion_reactions(
         self, payload: discord.RawReactionActionEvent
     ) -> Optional[None]:
         if payload.user_id == constants_bot.BOT_ID:

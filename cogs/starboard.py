@@ -46,8 +46,8 @@ class Starboard(commands.Cog, name="Starboard"):
             constants_bot.BONUS_CHANNEL_ID: self.bonus_channel,
         }
 
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(
+    @commands.Cog.listener(name="on_raw_reaction_add")
+    async def starboard_reactions(
         self, payload: discord.RawReactionActionEvent
     ) -> Optional[None]:
         if payload.user_id == constants_bot.BOT_ID:
