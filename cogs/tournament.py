@@ -997,8 +997,10 @@ class Tournament(commands.Cog, name="Tournament"):
 
     @commands.command(name="changetime", help="", brief="", aliases=["change"])
     async def _change_tournament_time(self, ctx):
-        author = ctx.message.author
-        await ctx.message.delete()
+        try:
+            await ctx.message.delete()
+        except Exception:
+            pass
         schedules = []
         async for schedule in Schedule.find({}):
             schedules.append(schedule)
@@ -1010,7 +1012,6 @@ class Tournament(commands.Cog, name="Tournament"):
         )
         await choices.run(users=[ctx.author], channel=ctx.channel)
         answer = choices.choice
-        await ctx.message.delete()
         await choices.quit()
 
         if answer is None:
@@ -1034,7 +1035,7 @@ class Tournament(commands.Cog, name="Tournament"):
         )
         embed.add_field(name="New ending time:", value=f"{response.content}")
 
-        view = Confirm("Tournament time change", author)
+        view = Confirm("Tournament time change", ctx.author)
         confirmation_msg = await ctx.send("Is this correct?", embed=embed, view=view)
         await view.wait()
 
@@ -1049,9 +1050,12 @@ class Tournament(commands.Cog, name="Tournament"):
         elif view.value is None:
             await confirmation_msg.edit(content="Timed out. Nothing will be changed.")
         await asyncio.sleep(5)
-        await response.delete()
-        await question.delete()
-        await confirmation_msg.delete()
+        try:
+            await response.delete()
+            await question.delete()
+            await confirmation_msg.delete()
+        except Exception:
+            pass
 
     @commands.command(help="", brief="", aliases=["hof", "fame"])
     async def halloffame(self, ctx: commands.Context):
