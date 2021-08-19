@@ -31,7 +31,7 @@ class ThreadBuilder(commands.Cog, name="Thread Builder"):
         self, ctx: commands.Context, title: str, image_url: str = None
     ):
         await ctx.message.delete()
-        embed = discord.Embed(title=title, color=discord.Color.dark_purple())
+        embed = discord.Embed(title=title, color=0x000001)
         try:
             if image_url is not None:
                 embed.set_image(url=image_url)
