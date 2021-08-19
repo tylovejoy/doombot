@@ -87,9 +87,10 @@ class Suggestions(commands.Cog, name="Suggestions"):
             )
             entry.starboard_id = starboard_message.id
             await entry.commit()
-            await starboard_message.start_thread(
+            thread = await starboard_message.start_thread(
                 name=message.content[:100], auto_archive_duration=1440
             )
+            await thread.add_user(message.author)
 
         else:
             starboard_message = self.starboard_channel.get_partial_message(
