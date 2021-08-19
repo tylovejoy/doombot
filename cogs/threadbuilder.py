@@ -20,7 +20,7 @@ class ThreadBuilder(commands.Cog, name="Thread Builder"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.has_any_role(constants_bot.THREAD_BUILD_WHITELIST)
+    @commands.has_any_role(*constants_bot.THREAD_BUILD_WHITELIST)
     @commands.command(help="", brief="", aliases=[])
     async def createthread(self, ctx: commands.Context, title: str, image_url: str):
         embed = doom_embed(title)
