@@ -152,17 +152,17 @@ class Tournament(commands.Cog, name="Tournament"):
     async def _end_round(self, mentions):
         list_mentions = mentions_to_list(mentions)
 
-        # await TopThree.collection.drop()
-        #
-        # top_three = TopThree(
-        #     **{
-        #         "ta_podium": [0],
-        #         "mc_podium": [0],
-        #         "hc_podium": [0],
-        #         "bonus_podium": [0],
-        #     }
-        # )
-        # await top_three.commit()
+        await TopThree.collection.drop()
+
+        top_three = TopThree(
+            **{
+                "ta_podium": [0],
+                "mc_podium": [0],
+                "hc_podium": [0],
+                "bonus_podium": [0],
+            }
+        )
+        await top_three.commit()
 
         bracket = False
         if constants_bot.BRACKET_TOURNAMENT_ROLE_ID in list_mentions:
@@ -1086,27 +1086,27 @@ class Tournament(commands.Cog, name="Tournament"):
         top_three = await TopThree.find_one({})
         ta_podium = []
         for i, _id in enumerate(top_three.ta_podium):
-            if i == 0:
-                continue
             member = guild.get_member(int(_id))
+            if member is None:
+                continue
             ta_podium.append(f"`{make_ordinal(i)}` {member.mention}")
         mc_podium = []
         for i, _id in enumerate(top_three.mc_podium):
-            if i == 0:
-                continue
             member = guild.get_member(int(_id))
+            if member is None:
+                continue
             mc_podium.append(f"`{make_ordinal(i)}` {member.mention}")
         hc_podium = []
         for i, _id in enumerate(top_three.hc_podium):
-            if i == 0:
-                continue
             member = guild.get_member(int(_id))
+            if member is None:
+                continue
             hc_podium.append(f"`{make_ordinal(i)}` {member.mention}")
         bonus_podium = []
         for i, _id in enumerate(top_three.bonus_podium):
-            if i == 0:
-                continue
             member = guild.get_member(int(_id))
+            if member is None:
+                continue
             bonus_podium.append(f"`{make_ordinal(i)}` {member.mention}")
 
         top_three_desc = (
