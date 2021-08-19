@@ -1,6 +1,7 @@
 import sys
 from logging import getLogger
 
+import discord
 from discord.ext import commands
 
 from utils.embeds import doom_embed
@@ -22,10 +23,14 @@ class ThreadBuilder(commands.Cog, name="Thread Builder"):
 
     @commands.has_any_role(*constants_bot.THREAD_BUILD_WHITELIST)
     @commands.command(help="", brief="", aliases=[])
-    async def createthread(self, ctx: commands.Context, title: str, image_url: str):
-        embed = doom_embed(title)
+    async def createthread(
+        self, ctx: commands.Context, title: str, image_url: str = None
+    ):
+        await ctx.message.delete()
+        embed = discord.Embed(title=title, color=discord.Color.dark_purple())
         try:
-            embed.set_image(url=image_url)
+            if image_url is not None:
+                embed.set_image(url=image_url)
         except Exception:
             pass
         else:
