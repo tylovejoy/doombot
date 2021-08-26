@@ -50,7 +50,7 @@ TYPE_MAX_LENGTH = 20
 NEWEST_MAPS_LIMIT = 10
 
 # Map names | CUSTOMIZE ACCEPTABLE NAMES
-AYUTTHAYA = ["ayutthaya", "ayutt"]
+AYUTTHAYA = ["ayutthaya", "ayutt", "ayaya"]
 BLACKFOREST = ["blackforest", "bf", "black forest"]
 BLIZZARDWORLD = [
     "blizzardworld",
@@ -73,6 +73,7 @@ HORIZONLUNARCOLONY = ["horizonlunarcolony", "hlc", "horizon", "horizon lunar col
 ILIOS = ["ilios"]
 JUNKERTOWN = ["junkertown"]
 LIJIANGTOWER = ["lijiangtower", "lijiang", "lijiang tower"]
+MALEVENTO = ["malevento", "vento", "mv", "male"]
 NECROPOLIS = ["necropolis"]
 NEPAL = ["nepal"]
 NUMBANI = ["numbani"]
@@ -131,6 +132,7 @@ ALL_MAP_NAMES = [
     KANEZAKA,
     KINGSROW,
     LIJIANGTOWER,
+    MALEVENTO,
     NECROPOLIS,
     NEPAL,
     NUMBANI,
@@ -166,6 +168,7 @@ PRETTY_NAMES = {
     "ilios": "Ilios",
     "junkertown": "Junkertown",
     "lijiangtower": "Lijiang Tower",
+    "malevento": "Malevento",
     "necropolis": "Necropolis",
     "nepal": "Nepal",
     "numbani": "Numbani",
