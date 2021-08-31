@@ -65,7 +65,7 @@ class Suggestions(commands.Cog, name="Suggestions"):
         entry.stars += 1
         entry.reacted = entry.reacted + [payload.user_id]
         await entry.commit()
-        if entry.stars < 6:
+        if entry.stars < 10:
             return
 
         message: discord.Message = await self.suggestion_channel.get_partial_message(
