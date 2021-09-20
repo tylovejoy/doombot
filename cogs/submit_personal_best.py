@@ -84,7 +84,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
             level = result.level
             record = result.record
 
-        map_code = map_code.upper()
+        map_code = map_code.upper().replace('O', '0')
         level = level.upper()
         record_in_seconds = time_convert(record)
 
@@ -254,7 +254,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
         """Delete personal best from database."""
         author = ctx.message.author
         await ctx.message.delete()
-        map_code = map_code.upper()
+        map_code = map_code.upper().replace('O', '0')
         level = level.upper()
 
         # Searches for author PB if none provided
