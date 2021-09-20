@@ -277,7 +277,7 @@ class ViewPersonalBest(commands.Cog, name="Personal bests and leaderboards"):
         if level_checker:
             embed = doom_embed(title=f"{title}")
             embed.add_field(
-                name="Currenly submitted levels:", value=f"{', '.join(level_checker)}"
+                name="Currently submitted levels:", value=f"{', '.join(level_checker)}"
             )
 
             await ctx.send(embed=embed, delete_after=60)
