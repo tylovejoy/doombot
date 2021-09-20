@@ -249,6 +249,19 @@ class MapSearch(commands.Cog, name="Map Search"):
         await searchmap(ctx, query, map_type=map_type, map_name=map_name)
 
     @commands.command(
+        aliases=constants.MALEVENTO[1:],
+        help="Display all Malevento maps. Optional argument for a single <map_type> to filter search. Use '/help maptypes' for a list of map types",
+        brief="Display all Malevento maps.",
+        hidden=True,
+    )
+    async def malevento(self, ctx, map_type=""):
+        """Search for and display all Malevento maps."""
+        map_name = "Malevento"
+        map_type = convert_short_types(map_type.upper())
+        query = normal_map_query(map_name, map_type)
+        await searchmap(ctx, query, map_type=map_type, map_name=map_name)
+
+    @commands.command(
         aliases=constants.NEPAL[1:],
         help="Display all Nepal maps. Optional argument for a single <map_type> to filter search. Use '/help maptypes' for a list of map types",
         brief="Display all Nepal maps.",

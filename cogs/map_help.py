@@ -64,6 +64,10 @@ class MapHelp(commands.Cog, name="Helpful Map Commands"):
             delete_after=30,
         )
 
+    @commands.is_owner()
+    @commands.command()
+    async def convert_codes(self, ctx):
+        pass
 
 def setup(bot):
     """Add Cog to Discord bot."""
