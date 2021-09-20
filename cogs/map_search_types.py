@@ -214,7 +214,7 @@ class MapSearchTypes(commands.Cog, name="Map Search Types"):
     )
     async def mapcode(self, ctx, map_code):
         """Search for and display a certain map code."""
-        code = map_code.upper().replace('O', '0').replace('I', 'L')
+        code = map_code.upper().replace('O', '0')
         query = {"code": code}
         embed = None
         async for entry in MapData.find(query):
