@@ -4,10 +4,7 @@ from logging import getLogger
 from discord.ext import commands
 
 import internal.constants as constants
-from internal.database import Guides
-from utils.map_utils import guide_duplicate_check
-from utils.multiple_choice import MultipleChoice
-from utils.views import Confirm, GuidePaginator
+from internal.database import MapData, WorldRecords
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -67,7 +64,19 @@ class MapHelp(commands.Cog, name="Helpful Map Commands"):
     @commands.is_owner()
     @commands.command()
     async def convert_codes(self, ctx):
-        pass
+        counter = 0
+        async for m in MapData.find():
+            m.code = m.code.replace('O', '0')
+            await m.commit()
+            counter += 1
+        await ctx.send(f"{counter} MapData objects have been edited.")
+
+        counter = 0
+        async for w in WorldRecords.find():
+            w.code = w.code.replace('O', '0')
+            await w.commit()
+            counter += 1
+        await ctx.send(f"{counter} WorldRecord objects have been edited.")
 
 def setup(bot):
     """Add Cog to Discord bot."""
