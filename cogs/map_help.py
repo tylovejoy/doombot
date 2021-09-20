@@ -66,14 +66,14 @@ class MapHelp(commands.Cog, name="Helpful Map Commands"):
     async def convert_codes(self, ctx):
         counter = 0
         async for m in MapData.find():
-            m.code = m.code.replace('O', '0')
+            m.code = m.code.replace('O', '0').replace('I', 'L')
             await m.commit()
             counter += 1
         await ctx.send(f"{counter} MapData objects have been edited.")
 
         counter = 0
         async for w in WorldRecords.find():
-            w.code = w.code.replace('O', '0')
+            w.code = w.code.replace('O', '0').replace('I', 'L')
             await w.commit()
             counter += 1
         await ctx.send(f"{counter} WorldRecord objects have been edited.")
