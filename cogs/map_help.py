@@ -4,7 +4,7 @@ from logging import getLogger
 from discord.ext import commands
 
 import internal.constants as constants
-from internal.database import MapData, WorldRecords
+from internal.database import MapData, WorldRecords, Guides
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -77,6 +77,14 @@ class MapHelp(commands.Cog, name="Helpful Map Commands"):
             await w.commit()
             counter += 1
         await ctx.send(f"{counter} WorldRecord objects have been edited.")
+
+        counter=0
+        async for g in Guides.find():
+            g.code = g.code.replace('O', '0')
+            await g.commit()
+            counter += 1
+        await ctx.send(f"{counter} Guide objects have been edited.")
+
 
 def setup(bot):
     """Add Cog to Discord bot."""
