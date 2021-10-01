@@ -279,7 +279,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
 
         if not search:
             m = await ctx.channel.send(
-                "Provided arguments might not exist. Personal best deletion was unsuccesful."
+                "Provided arguments might not exist. Personal best deletion was unsuccessful."
             )
             await asyncio.sleep(10)
             await m.delete()
@@ -315,7 +315,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
 
         if view.value:
             await msg.edit(
-                content="Personal best deleted succesfully.", delete_after=20
+                content="Personal best deleted successfully.", delete_after=20
             )
             channel = self.bot.get_channel(constants_bot.HIDDEN_VERIFICATION_CHANNEL)
 

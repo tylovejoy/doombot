@@ -149,7 +149,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
 
         submission = MapData(
             **dict(
-                code=map_code,
+                code=map_code.replace('O', '0'),
                 creator=creator,
                 map_name=new_map_name,
                 desc=desc,
