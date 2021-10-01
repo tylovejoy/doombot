@@ -62,7 +62,7 @@ class MapHelp(commands.Cog, name="Helpful Map Commands"):
         )
 
     @commands.is_owner()
-    @commands.command()
+    @commands.command(hidden=True)
     async def convert_codes(self, ctx):
         counter = 0
         async for m in MapData.find():
@@ -78,7 +78,7 @@ class MapHelp(commands.Cog, name="Helpful Map Commands"):
             counter += 1
         await ctx.send(f"{counter} WorldRecord objects have been edited.")
 
-        counter=0
+        counter = 0
         async for g in Guides.find():
             g.code = g.code.replace('O', '0')
             await g.commit()
