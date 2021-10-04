@@ -35,12 +35,8 @@ async def searchmap(
 
     """
     # Checks for map_type, if exists
-    author = None
-    try:
-        author = ctx.message.author
-        await ctx.message.delete()
-    except discord.HTTPException:
-        pass
+    await ctx.message.delete()
+    author = ctx.author
     if map_type:
         if map_type not in constants.TYPES_OF_MAP:
             await ctx.send(

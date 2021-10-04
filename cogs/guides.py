@@ -53,7 +53,7 @@ class MapGuides(commands.Cog, name="Map Guides"):
             return
 
         await ctx.message.delete()
-        map_code = map_code.upper()
+        map_code = map_code.upper().replace('O', '0')
 
         search = await Guides.find_one({"code": map_code})
         if search is None:
@@ -95,7 +95,7 @@ class MapGuides(commands.Cog, name="Map Guides"):
     async def guide(self, ctx, map_code):
         if ctx.guild is not None:
             await ctx.message.delete()
-        map_code = map_code.upper()
+        map_code = map_code.upper().replace('O', '0')
         search = await Guides.find_one({"code": map_code})
         if not search or not search.guide:
             await ctx.send(f"There are no guides for {map_code} yet.", delete_after=10)
@@ -115,7 +115,7 @@ class MapGuides(commands.Cog, name="Map Guides"):
     @commands.command(
         help=(
             "Delete any guide that you have posted. Mods can delete any guide.\n"
-            "A list of links will appear; select the cooresponding reaction.\n"
+            "A list of links will appear; select the corresponding reaction.\n"
             "/deleteguide <map_code>"
         ),
         brief="Delete a guide.",
@@ -128,7 +128,7 @@ class MapGuides(commands.Cog, name="Map Guides"):
             return
 
         await ctx.message.delete()
-        map_code = map_code.upper()
+        map_code = map_code.upper().replace('O', '0')
         search: Guides = await Guides.find_one({"code": map_code})
 
         if search is None:
@@ -179,7 +179,7 @@ class MapGuides(commands.Cog, name="Map Guides"):
             f"Do you want to delete this guide?\n{url_to_delete}", view=view
         )
         await view.wait()
-        await msg.edit(view=view)
+        await msg.edit(view=view, delete_after=10)
         if view.value:
             await search.commit()
         elif not view.value:
