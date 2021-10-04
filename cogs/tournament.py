@@ -146,8 +146,8 @@ class Tournament(commands.Cog, name="Tournament"):
         if constants_bot.BONUS_ROLE_ID in list_mentions:
             await lock_unlock(self.bonus_channel, self.bonus_role, unlock=True)
 
-        start_annoucenment = discord.Embed.from_dict(embed_dict)
-        await self.info_channel.send(f"{mentions}", embed=start_annoucenment)
+        start_announcement = discord.Embed.from_dict(embed_dict)
+        await self.info_channel.send(f"{mentions}", embed=start_announcement)
 
     async def _end_round(self, mentions):
         list_mentions = mentions_to_list(mentions)
@@ -399,7 +399,7 @@ class Tournament(commands.Cog, name="Tournament"):
 
         if view.value:
             await msg.edit(
-                content="Personal best deleted succesfully.", delete_after=15, view=view
+                content="Personal best deleted successfully.", delete_after=15, view=view
             )
             await search.delete()
         elif not view.value:
@@ -418,7 +418,7 @@ class Tournament(commands.Cog, name="Tournament"):
         case_insensitive=True,
         aliases=["times"],
         help="Choose a specific category to view currently submitted times for that category. \nExample: /board ta",
-        brief="Leadboard for Tournament Times",
+        brief="Leaderboard for Tournament Times",
     )
     @viewable_channels()
     async def board(self, ctx):
@@ -810,7 +810,7 @@ class Tournament(commands.Cog, name="Tournament"):
     @unlock.command(
         name="ta",
         aliases=["timeattack", "time-attack"],
-        help="Unock time attack submissions",
+        help="Unlock time attack submissions",
     )
     @commands.has_role(constants_bot.ORG_ROLE_ID)
     async def _unlock_ta(self, ctx):

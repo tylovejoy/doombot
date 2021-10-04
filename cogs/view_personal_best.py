@@ -50,7 +50,7 @@ class ViewPersonalBest(commands.Cog, name="Personal bests and leaderboards"):
         """Display personal best of a particular user, or author of command."""
         author = ctx.message.author
         await ctx.message.delete()
-        # Query for own PBs (w/ no name arg) or another's PBs
+        # Query for own PBs (w/ no name arg) or another users PBs
         if name is None:
             query = {
                 "$or": [
@@ -88,7 +88,7 @@ class ViewPersonalBest(commands.Cog, name="Personal bests and leaderboards"):
                     map_name = "Needs Map"
                     creator = "Needs Author"
 
-            # Create a dict of all the indivudal map_codes and the PBs for each map_code
+            # Create a dict of all the individual map_codes and the PBs for each map_code
             if embed_dict.get(str(entry.code), None) is None:
                 embed_dict[str(entry.code)] = {
                     "title": f"{entry.code} - {map_name} by {creator}\n",

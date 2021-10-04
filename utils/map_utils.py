@@ -26,7 +26,7 @@ async def searchmap(
         ctx (:obj: `commands.Context`)
         query (dict): Query for database
         map_type (str, optional): Type of map to search
-        map_name (str, optional): Name of map to seach
+        map_name (str, optional): Name of map to search
         creator (str, optional): Creator of map to search
         map_code (str, optional): Map code to search
 

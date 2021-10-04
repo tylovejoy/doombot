@@ -19,7 +19,7 @@ class Paginator:
     max_size: :class:`int`
         The maximum amount of codepoints allowed in a page.
     color: Optional[:class:`discord.Color`, :class: `int`]
-        The color of the disord embed. Default is a random color for every invoke
+        The color of the discord embed. Default is a random color for every invoke
     ending_note: Optional[:class:`str`]
         The footer in of the help embed
     """
@@ -39,11 +39,11 @@ class Paginator:
 
     def _check_embed(self, embed: discord.Embed, *chars: str):
         """
-        Check if the emebed is too big to be sent on discord
+        Check if the embed is too big to be sent on discord
         Args:
             embed (discord.Embed): The embed to check
         Returns:
-            bool: Will return True if the emebed isn't too large
+            bool: Will return True if the embed isn't too large
         """
         check = (
             len(embed) + sum(len(char) for char in chars if char) < self.char_limit
@@ -212,14 +212,14 @@ class PrettyHelp(HelpCommand):
     color: :class: `discord.Color`
         The color to use for the help embeds. Default is a random color.
     dm_help: Optional[:class:`bool`]
-        A tribool that indicates if the help command should DM the user instead of
+        A bool that indicates if the help command should DM the user instead of
         sending it to the channel it received it from. If the boolean is set to
         ``True``, then all help output is DM'd. If ``False``, none of the help
         output is DM'd. If ``None``, then the bot will only DM when the help
         message becomes too long (dictated by more than :attr:`dm_help_threshold` characters).
         Defaults to ``False``.
     menu: Optional[:class:`pretty_help.PrettyMenu`]
-        The menu to use for navigating pages. Defautl is :class:`DefaultMenu`
+        The menu to use for navigating pages. Default is :class:`DefaultMenu`
         Custom menus should inherit from :class:`pretty_help.PrettyMenu`
     ending_note: Optional[:class:`str`]
         The footer in of the help embed
