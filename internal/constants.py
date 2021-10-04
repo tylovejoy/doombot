@@ -26,7 +26,7 @@ BAD_BOT_PERCENTAGE_TRESHOLD = 35
 CONFIRM_REACTION_EMOJI = "🟢"  # Reaction emoji used to confirm actions
 CANCEL_REACTION_EMOJI = "🟥"  # Reaction emoji used to cancel actions
 
-# Message sent at the bottom of every reaction confirmaation
+# Message sent at the bottom of every reaction confirmation
 CONFIRMATION_TEXT = f"*Please react to this message with {CONFIRM_REACTION_EMOJI} to continue, or react with {CANCEL_REACTION_EMOJI} to cancel. Waiting for two minutes will cancel the process automatically.*"
 
 LEFT_REACTION_EMOJI = "◀"  # Reaction emoji used to turn page left
