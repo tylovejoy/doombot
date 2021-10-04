@@ -109,13 +109,13 @@ class Tournament(commands.Cog, name="Tournament"):
                     >= s.start_time
                     != datetime.datetime(year=1, month=1, day=1)
                 ):
-                    logger.info("Starting scheduled tournment.")
+                    logger.info("Starting scheduled tournament.")
                     await self._start_round(s.mentions, s.embed_dict)
                     s.start_time = datetime.datetime(year=1, month=1, day=1)
                     await s.commit()
 
                 if current_time >= s.schedule:
-                    logger.info("Ending scheduled tournment.")
+                    logger.info("Ending scheduled tournament.")
                     await self._end_round(s.mentions)
                     await s.delete()
 
@@ -936,8 +936,8 @@ class Tournament(commands.Cog, name="Tournament"):
 
     @commands.command(
         name="announce",
-        help="[ORG ONLY] Nicely formatted annoucements posted on #tournament-announcements.\n\nBe sure to use quotation marks around the title and messages when they contain spaces!\n\nAdd an image by attaching to the command message.",
-        brief="[ORG ONLY] Post annoucements in #tournament-announcements",
+        help="[ORG ONLY] Nicely formatted announcements posted on #tournament-announcements.\n\nBe sure to use quotation marks around the title and messages when they contain spaces!\n\nAdd an image by attaching to the command message.",
+        brief="[ORG ONLY] Post announcements in #tournament-announcements",
     )
     @commands.has_role(constants_bot.ORG_ROLE_ID)
     async def _announcement(self, ctx, title: str, message: str, *, mentions=None):

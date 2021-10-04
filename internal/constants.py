@@ -18,10 +18,10 @@ TYPES_OF_MAP = [
 ]
 
 # The amount of servers required for a bot to be eligible for verification.
-VERIFICATION_GUILD_COUNT_TRESHOLD = 75
+VERIFICATION_GUILD_COUNT_THRESHOLD = 75
 
 # The % of bot accounts in a server in order for the server to be considered low quality
-BAD_BOT_PERCENTAGE_TRESHOLD = 35
+BAD_BOT_PERCENTAGE_THRESHOLD = 35
 
 CONFIRM_REACTION_EMOJI = "🟢"  # Reaction emoji used to confirm actions
 CANCEL_REACTION_EMOJI = "🟥"  # Reaction emoji used to cancel actions
