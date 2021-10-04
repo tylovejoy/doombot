@@ -295,6 +295,7 @@ class MapSearchTypes(commands.Cog, name="Map Search Types"):
 
     @commands.command(help="", brief="", aliases=["random"])
     async def randomcode(self, ctx):
+        await ctx.message.delete()
         count = await MapData.count_documents({})
         random_number = randint(0, count - 1)
         en = stream.enumerate(MapData.find({}))
@@ -309,10 +310,7 @@ class MapSearchTypes(commands.Cog, name="Map Search Types"):
                         value=f"> Creator: {entry.creator}\n> Map Types: {', '.join(entry.type)}\n> Description: {entry.desc}",
                         inline=False,
                     )
-                    m = await ctx.send(embed=embed)
-                    await asyncio.sleep(30)
-                    await m.delete()
-                    await ctx.message.delete()
+                    await ctx.send(embed=embed, delete_after=30)
                     return
 
 
