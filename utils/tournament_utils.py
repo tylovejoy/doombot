@@ -140,7 +140,7 @@ async def exporter(category, channel, ctx=None, guild=None):
             )
 
         embed = doom_embed(
-            title=username.name,
+            title=username.name if username.name else "Unknown",
             url=entry.attachment_url,
         )
         embed.add_field(name=category, value=f"{display_record(entry.record)}")
@@ -165,7 +165,7 @@ async def single_exporter(ctx, category, user: discord.Member = None):
         )
 
         embed = doom_embed(
-            title=username.name,
+            title=username.name if username.name else "Unknown",
             url=entry.attachment_url,
         )
         embed.add_field(name=category, value=f"{display_record(entry.record)}")
