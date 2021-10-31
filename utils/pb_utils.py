@@ -51,6 +51,18 @@ def is_time_format(s):
 
 def time_convert(time_input):
     """Convert time (str) into seconds (float)."""
+    if time_input[0] == "-":
+        time_list = time_input.split(":")
+        if len(time_list) == 1:
+            return float(time_list[0])
+        elif len(time_list) == 2:
+            return float((int(time_list[0]) * 60) + -float(time_list[1]))
+        elif len(time_list) == 3:
+            return float(
+                (int(time_list[0]) * 3600) + -(int(time_list[1]) * 60) + -float(time_list[2])
+            )
+        return
+
     time_list = time_input.split(":")
     if len(time_list) == 1:
         return float(time_list[0])
@@ -85,7 +97,7 @@ def check_negative(s):
 
 def format_timedelta(td):
     if datetime.timedelta(seconds=td) < datetime.timedelta(0):
-        return "-" + format_timedelta(-td)
+        return "-" + format_timedelta(-1 * td)
     else:
         return str(td)
 

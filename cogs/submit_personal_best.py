@@ -80,13 +80,13 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
                 await ctx.send("Personal best submission cancelled.")
                 return
 
-            map_code = result.map_code
-            level = result.level
-            record = result.record
+            map_code = result.map_code.replace("\"", "")
+            level = result.level.replace("\"", "")
+            record = result.record.replace("\"", "")
 
-        map_code = map_code.upper().replace('O', '0')
-        level = level.upper()
-        record_in_seconds = time_convert(record)
+        map_code = map_code.upper().replace('O', '0').replace("\"", "")
+        level = level.upper().replace("\"", "")
+        record_in_seconds = time_convert(record).replace("\"", "")
 
         # Find currently associated levels
         level_checker = {}
