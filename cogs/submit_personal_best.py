@@ -86,7 +86,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
 
         map_code = map_code.upper().replace('O', '0').replace("\"", "")
         level = level.upper().replace("\"", "")
-        record_in_seconds = time_convert(record).replace("\"", "")
+        record_in_seconds = time_convert(record.replace("\"", ""))
 
         # Find currently associated levels
         level_checker = {}
