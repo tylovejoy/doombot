@@ -7,7 +7,6 @@ from utils.embeds import doom_embed
 import dateparser
 import discord
 from discord.ext import commands
-
 from internal.database import (
     BonusData,
     HardcoreData,
@@ -17,7 +16,7 @@ from internal.database import (
     TournamentData,
     TournamentRecords,
 )
-
+from utils.views import Confirm
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -28,31 +27,16 @@ else:
 logger = getLogger(__name__)
 
 
-def parse_maps(text):
-    lines = text.split("\n")
-    for line in lines:
-        line.split(" - ")
-    maps = {
-        "ta": {"code": lines[0][0], "map": lines[0][1], "author": lines[0][2]},
-        "mc": {"code": lines[1][0], "map": lines[1][1], "author": lines[1][2]},
-        "hc": {"code": lines[2][0], "map": lines[2][1], "author": lines[2][2]},
-        "bo": {"code": lines[3][0], "map": lines[3][1], "author": lines[3][2]},
-    }
-    return maps
+def parse_map(text):
+    for x in text:
+        x.split(" - ")
+    return {"code": x[0], "level": x[1], "author": x[2]}
+
 
 def display_maps(maps):
     string = ""
-    for key in maps["ta"].keys():
-        string += maps["ta"][key]
-    string += "\n"
-    for key in maps["mc"].keys():
-        string += maps["mc"][key]
-    string += "\n"
-    for key in maps["hc"].keys():
-        string += maps["hc"][key]
-    string += "\n"
-    for key in maps["bo"].keys():
-        string += maps["bo"][key]
+    for key in maps.keys():
+        string += maps[key]
     return string
 
 
@@ -94,65 +78,94 @@ class Tournament2(commands.Cog, name="Tournament2"):
         await tournament.commit()
         self.cur_tournament = tournament
 
+
     @commands.command()
     async def start(self, ctx):
         if self.cur_tournament:
-            ctx.send("You cannot start a tournament while another one is active.")
+            ctx.send("You cannot start a tournament while another one is active.", delete_after=10)
             return
 
         def check(message: discord.Message):
             return message.channel == ctx.channel and message.author == ctx.author
 
         # Begin Questions Wizard
-        wizard_embed = doom_embed("Tournament Start Wizard", desc="What's the title for this tournament?")
+        wizard_embed = doom_embed(
+            "Tournament Start Wizard", 
+            desc=(
+                "Enter tournament details in this format:\n"
+                "**Title**\n"
+                "**Start Time**\n"
+                "**End Time**\n"
+                "TA_CODE - LEVEL - CREATOR\n"
+                "MC_CODE - LEVEL - CREATOR\n"
+                "HC_CODE - LEVEL - CREATOR\n"
+                "BO_CODE - LEVEL - CREATOR\n"
+            )
+        )
         wizard = await ctx.send(embed=wizard_embed)
         results = {}
 
-        title_response = await self.bot.wait_for("message", check=check, timeout=30)
-        results["title"] = title_response.content
-        wizard_embed.add_field(name="Title:", value=title_response.content)
-        await title_response.delete()
-        wizard_embed.desc = "What are the maps for this tournament?"
-        await wizard.edit(embed=wizard_embed)
+        response = await self.bot.wait_for("message", check=check, timeout=30)
+        lines = response.content.split("\n")
 
-        maps_response = await self.bot.wait_for("message", check=check, timeout=30)
-        results["maps"] = parse_maps(maps_response.content)
-        await maps_response.delete()
-        maps_str = display_maps(results["maps"])
-        
-        wizard_embed.add_field(name="Maps:", value=maps_str)
-        wizard_embed.desc = "When should this tournament begin?"
-        await wizard.edit(embed=wizard_embed)
+        await wizard.delete()
+        await response.delete()
 
-        start_response = await self.bot.wait_for("message", check=check, timeout=30)
+        results["title"] = lines[0]
         
         results["start_time"] = dateparser.parse(
-            start_response.content, settings={"PREFER_DATES_FROM": "future"}
+            lines[1], settings={"PREFER_DATES_FROM": "future"}
         )
-        start_unix = time.mktime(results["start_time"].timetuple())
-        wizard_embed.add_field(
-            name="Start Time:", value=f"<t:{start_unix}:R>\n<t:{start_unix}:F>"
-        )
-        wizard_embed.desc = "When should this tournament end?"
-        await wizard.edit(embed=wizard_embed)
-        end_response = await self.bot.wait_for("message", check=check, timeout=30)
         results["end_time"] = dateparser.parse(
-            end_response.content, settings={"PREFER_DATES_FROM": "future"}
+            lines[2], settings={"PREFER_DATES_FROM": "future"}
         )
 
         end_time = results["end_time"].isoformat()
-
         if results["start_time"]:
             delta = results["end_time"] - datetime.datetime.now()
             end_time = results["start_time"] + delta
             end_time = end_time.isoformat()
-
+        start_unix = time.mktime(results["start_time"].timetuple())
         end_unix = time.mktime(end_time.timetuple())
-        wizard_embed.add_field(name="End Time:", value=f"<t:{end_unix}:R>\n<t:{end_unix}:F>")
 
 
+        results["ta"] = parse_map(lines[3])
+        results["mc"] = parse_map(lines[4])
+        results["hc"] = parse_map(lines[5])
+        results["bo"] = parse_map(lines[6])
 
-        await self._setup_db(results["title"], results["start_time"], results["end_time"], results["maps"], {})
+        embed = doom_embed(desc=(
+            f"**{results['title']}**\n"
+            f"<t:{start_unix}:R> -- <t:{start_unix}:F>\n"
+            f"<t:{end_unix}:R> -- <t:{end_unix}:F>\n"
+            f"**{display_maps(results['ta'])}**\n"
+            f"**{display_maps(results['mc'])}**\n"
+            f"**{display_maps(results['hc'])}**\n"
+            f"**{display_maps(results['bo'])}**\n"
+        ))
+        maps = {
+            "ta": results["ta"],
+            "mc": results["mc"],
+            "hc": results["hc"],
+            "bo": results["bo"],
+        }
+
+        view = Confirm("Start Tournament Wizard", ctx.author)
+        confirmation_msg = await ctx.send("Is this correct?", embed=embed, view=view)
+        await view.wait()
+
+        if view.value:
+            pass
+
+        elif not view.value:
+            await confirmation_msg.edit(
+                content="Not accepted. Nothing will be changed."
+            )
+        elif view.value is None:
+            await confirmation_msg.edit(content="Timed out. Nothing will be changed.")
+        
+        
+        await self._setup_db(results["title"], results["start_time"], results["end_time"], maps)
 
 
 def setup(bot):
