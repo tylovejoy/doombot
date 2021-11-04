@@ -28,20 +28,29 @@ logger = getLogger(__name__)
 
 
 async def _setup_db(name, start, end, embed):
-    last_tournament_id = await TournamentData().find(sort=[("tournament_id", -1)], limit=1).to_list(1)
-    if not last_tournament_id:
-        last_tournament_id = 0
-    tournament_id = last_tournament_id + 1
+    last_tournament = await TournamentData().find_one(sort=[("tournament_id", -1)], limit=1)
+    if last_tournament:
+        tournament_id = last_tournament.tournament_id + 1
+    else:
+        tournament_id = 1
 
-    data = {
-        "tournament_id": tournament_id,
-        "name": name,
-        "schedule_start": start,
-        "schedule_end": end,
-        "embed_dict": embed
+    tournament = TournamentData(
+        **{
+            "tournament_id": tournament_id,
+            "name": name,
+            "schedule_start": start,
+            "schedule_end": end,
+            "embed_dict": embed,
+        }
+    )
+    tournament.records = TournamentRecords()
+    tournament.records = {
+        "ta": [],
+        "mc": [],
+        "hc": [],
+        "bo": [],
     }
-
-    tournament = TournamentData(**data)
+    await tournament.commit()
 
 
 class Tournament2(commands.Cog, name="Tournament2"):
@@ -52,17 +61,8 @@ class Tournament2(commands.Cog, name="Tournament2"):
 
     @commands.command()
     async def test(self, ctx):
-        logger.info(await _setup_db())
-        # x = await TournamentData().find_one()
-        # # This is for init the
-        # # x.tournament_id = 1
-        # # x.name = "Test"
-        # # x.records = TournamentRecords()
-        # logger.info(x.records)
-        # logger.info(x.records.ta)
-        # x.records.ta += [TimeAttackData(**{"posted_by": 2, "name": "test2", "record": 2.0, "attachment_url": "test2"})]
-        #
-        # await x.commit()
+        logger.info(await _setup_db("test", "1", "1", {}))
+
 
 
 
