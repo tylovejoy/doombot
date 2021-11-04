@@ -9,6 +9,7 @@ from umongo.fields import (
     StringField,
     UrlField,
     EmbeddedField,
+    BaseField,
 )
 
 from internal.database_init import instance
@@ -59,6 +60,16 @@ class BonusData(EmbeddedDocument):
 
 
 @instance.register
+class TournamentMissions(EmbeddedDocument):
+    """Records."""
+
+    ta = ListField(BaseField, allow_none=True)
+    mc = ListField(BaseField, allow_none=True)
+    hc = ListField(BaseField, allow_none=True)
+    bo = ListField(BaseField, allow_none=True)
+
+
+@instance.register
 class TournamentRecords(EmbeddedDocument):
     """Records."""
 
@@ -66,6 +77,17 @@ class TournamentRecords(EmbeddedDocument):
     mc = ListField(EmbeddedField(MildcoreData), allow_none=True)
     hc = ListField(EmbeddedField(HardcoreData), allow_none=True)
     bo = ListField(EmbeddedField(BonusData), allow_none=True)
+
+
+@instance.register
+class TournamentMaps(EmbeddedDocument):
+    """Records."""
+
+    ta = DictField()
+    mc = DictField()
+    hc = DictField()
+    bo = DictField()
+
 
 
 @instance.register
@@ -80,7 +102,9 @@ class TournamentData(Document):
 
     embed_dict = DictField()
 
+    maps = EmbeddedField(TournamentMaps)
     records = EmbeddedField(TournamentRecords)
+    missions = EmbeddedField(TournamentMissions)
 
     class Meta:
         """MongoDb database collection name."""
