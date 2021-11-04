@@ -58,17 +58,6 @@ class BonusData(EmbeddedDocument):
     attachment_url = StringField(required=True)
 
 
-
-@instance.register
-class TournamentMissions(EmbeddedDocument):
-    """Records."""
-
-    ta = ListField(BaseField, allow_none=True)
-    mc = ListField(BaseField, allow_none=True)
-    hc = ListField(BaseField, allow_none=True)
-    bo = ListField(BaseField, allow_none=True)
-
-
 @instance.register
 class TournamentRecords(EmbeddedDocument):
     """Records."""
@@ -97,14 +86,14 @@ class TournamentData(Document):
     tournament_id = IntegerField()
     name = StringField()
 
-    schedule_start = IntegerField()
-    schedule_end = IntegerField()
+    schedule_start = DateTimeField()
+    schedule_end = DateTimeField()
 
     embed_dict = DictField()
 
     maps = EmbeddedField(TournamentMaps)
     records = EmbeddedField(TournamentRecords)
-    missions = EmbeddedField(TournamentMissions)
+    missions = DictField()
 
     class Meta:
         """MongoDb database collection name."""
