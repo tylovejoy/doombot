@@ -1,4 +1,4 @@
-from umongo import Document
+from umongo import Document, EmbeddedDocument
 from umongo.fields import (
     BooleanField,
     DateTimeField,
@@ -8,13 +8,14 @@ from umongo.fields import (
     ListField,
     StringField,
     UrlField,
+    EmbeddedField,
 )
 
 from internal.database_init import instance
 
 
 @instance.register
-class BonusData(Document):
+class TimeAttackData(EmbeddedDocument):
     """TournamentData database document."""
 
     posted_by = IntegerField(required=True, unique=True)
@@ -22,14 +23,10 @@ class BonusData(Document):
     record = FloatField(required=True)
     attachment_url = StringField(required=True)
 
-    class Meta:
-        """MongoDb database collection name."""
-
-        collection_name = "BonusData"
 
 
 @instance.register
-class HardcoreData(Document):
+class MildcoreData(EmbeddedDocument):
     """TournamentData database document."""
 
     posted_by = IntegerField(required=True, unique=True)
@@ -37,10 +34,58 @@ class HardcoreData(Document):
     record = FloatField(required=True)
     attachment_url = StringField(required=True)
 
+
+@instance.register
+class HardcoreData(EmbeddedDocument):
+    """TournamentData database document."""
+
+    posted_by = IntegerField(required=True, unique=True)
+    name = StringField(required=True)
+    record = FloatField(required=True)
+    attachment_url = StringField(required=True)
+
+
+
+
+@instance.register
+class BonusData(EmbeddedDocument):
+    """TournamentData database document."""
+
+    posted_by = IntegerField(required=True, unique=True)
+    name = StringField(required=True)
+    record = FloatField(required=True)
+    attachment_url = StringField(required=True)
+
+
+
+@instance.register
+class TournamentRecords(EmbeddedDocument):
+    """Records."""
+
+    ta = ListField(EmbeddedField(TimeAttackData), allow_none=True)
+    mc = ListField(EmbeddedField(MildcoreData), allow_none=True)
+    hc = ListField(EmbeddedField(HardcoreData), allow_none=True)
+    bo = ListField(EmbeddedField(BonusData), allow_none=True)
+
+
+@instance.register
+class TournamentData(Document):
+    """MapData database document."""
+
+    tournament_id = IntegerField()
+    name = StringField()
+
+    schedule_start = IntegerField()
+    schedule_end = IntegerField()
+
+    embed_dict = DictField()
+
+    records = EmbeddedField(TournamentRecords)
+
     class Meta:
         """MongoDb database collection name."""
 
-        collection_name = "HardcoreData"
+        collection_name = "TournamentData"
 
 
 @instance.register
@@ -68,68 +113,6 @@ class Guides(Document):
 
     class Meta:
         collection_name = "Guides"
-
-
-@instance.register
-class MildcoreData(Document):
-    """TournamentData database document."""
-
-    posted_by = IntegerField(required=True, unique=True)
-    name = StringField(required=True)
-    record = FloatField(required=True)
-    attachment_url = StringField(required=True)
-
-    class Meta:
-        """MongoDb database collection name."""
-
-        collection_name = "MildcoreData"
-
-
-@instance.register
-class Schedule(Document):
-    """MapData database document."""
-
-    schedule = DateTimeField(required=True)
-    mentions = StringField(required=True)
-
-    title = StringField(required=True)
-
-    start_time = DateTimeField(required=False)
-    embed_dict = DictField(required=False)
-
-    class Meta:
-        """MongoDb database collection name."""
-
-        collection_name = "Schedule"
-
-
-@instance.register
-class TimeAttackData(Document):
-    """TournamentData database document."""
-
-    posted_by = IntegerField(required=True, unique=True)
-    name = StringField(required=True)
-    record = FloatField(required=True)
-    attachment_url = StringField(required=True)
-
-    class Meta:
-        """MongoDb database collection name."""
-
-        collection_name = "TimeAttackData"
-
-
-@instance.register
-class TournamentData(Document):
-    """MapData database document."""
-
-    tournament_id = IntegerField(required=True)
-    signups_open = BooleanField(required=True)
-    annoucement_id = IntegerField(required=True)
-
-    class Meta:
-        """MongoDb database collection name."""
-
-        collection_name = "TournamentData"
 
 
 @instance.register
