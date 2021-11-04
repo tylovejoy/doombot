@@ -63,7 +63,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
         self.bot = bot
         self.cur_tournament = None
 
-    async def _setup_db(self, name, start, end, maps, embed):
+    async def _setup_db(self, name, start, end, maps):
         last_tournament = await TournamentData().find_one(
             sort=[("tournament_id", -1)], limit=1
         )
@@ -72,13 +72,11 @@ class Tournament2(commands.Cog, name="Tournament2"):
         else:
             tournament_id = 1
 
-
         tournament = TournamentData(**{
             "tournament_id": tournament_id,
             "name": name,
             "schedule_start": start,
             "schedule_end": end,
-            "embed_dict": embed,
         })
         tournament.maps = {**maps}
         tournament.records = {
@@ -108,45 +106,45 @@ class Tournament2(commands.Cog, name="Tournament2"):
         # Begin Questions Wizard
         wizard_embed = doom_embed("Tournament Start Wizard", desc="What's the title for this tournament?")
         wizard = await ctx.send(embed=wizard_embed)
-        wizard_results = {}
+        results = {}
 
         title_response = await self.bot.wait_for("message", check=check, timeout=30)
-        wizard_results["title": title_response.content]
+        results["title"] = title_response.content
         wizard_embed.add_field(name="Title:", value=title_response.content)
         await title_response.delete()
         wizard_embed.desc = "What are the maps for this tournament?"
         await wizard.edit(embed=wizard_embed)
 
         maps_response = await self.bot.wait_for("message", check=check, timeout=30)
-        maps = parse_maps(maps_response.content)
+        results["maps"] = parse_maps(maps_response.content)
         await maps_response.delete()
-        maps_str = display_maps(maps)
-        wizard_results["maps": maps]
+        maps_str = display_maps(results["maps"])
+        
         wizard_embed.add_field(name="Maps:", value=maps_str)
         wizard_embed.desc = "When should this tournament begin?"
         await wizard.edit(embed=wizard_embed)
 
         start_response = await self.bot.wait_for("message", check=check, timeout=30)
         
-        start_time = dateparser.parse(
+        results["start_time"] = dateparser.parse(
             start_response.content, settings={"PREFER_DATES_FROM": "future"}
         )
-        start_unix = time.mktime(start_time.timetuple())
+        start_unix = time.mktime(results["start_time"].timetuple())
         wizard_embed.add_field(
             name="Start Time:", value=f"<t:{start_unix}:R>\n<t:{start_unix}:F>"
         )
         wizard_embed.desc = "When should this tournament end?"
         await wizard.edit(embed=wizard_embed)
         end_response = await self.bot.wait_for("message", check=check, timeout=30)
-        end = dateparser.parse(
+        results["end_time"] = dateparser.parse(
             end_response.content, settings={"PREFER_DATES_FROM": "future"}
         )
 
-        end_time = end.isoformat()
+        end_time = results["end_time"].isoformat()
 
-        if start_time:
-            delta = end - datetime.datetime.now()
-            end_time = start_time + delta
+        if results["start_time"]:
+            delta = results["end_time"] - datetime.datetime.now()
+            end_time = results["start_time"] + delta
             end_time = end_time.isoformat()
 
         end_unix = time.mktime(end_time.timetuple())
@@ -154,7 +152,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
 
 
 
-        await self._setup_db(wizard_results["title"], start_time, end_time, maps, {})
+        await self._setup_db(results["title"], results["start_time"], results["end_time"], results["maps"], {})
 
 
 def setup(bot):
