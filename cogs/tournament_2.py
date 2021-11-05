@@ -16,7 +16,8 @@ from internal.database import (
     TournamentData,
     TournamentRecords,
 )
-from utils.tournament_utils import lock_unlock
+from utils.pb_utils import time_convert
+from utils.tournament_utils import lock_unlock, category_sort
 from utils.views import Confirm, BracketToggle
 
 if len(sys.argv) > 1:
@@ -329,6 +330,30 @@ class Tournament2(commands.Cog, name="Tournament2"):
         elif view.value is None:
             await confirmation_msg.edit(content="Timed out. Nothing will be changed.")
 
+    @commands.command(
+        name="submit",
+        help="Record must be in HH:MM:SS.ss format. Screenshot must be attached to the submission message.",
+        brief="Submit times to tournament.",
+    )
+    async def submit(self, ctx, record):
+
+        category = category_sort(ctx.message)
+        if category is None:
+            return
+
+        if not ctx.message.attachments:
+            await ctx.send(
+                "No attachment found. Please submit time with attachment in the same message."
+            )
+            return
+        
+        record_in_seconds = time_convert(record)
+
+        if not record_in_seconds:
+            await ctx.send("Invalid time. Map submission rejected.")
+            return
+
+        
 
 def setup(bot):
     """Add Cog to Discord bot."""
