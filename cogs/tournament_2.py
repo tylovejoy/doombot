@@ -193,6 +193,9 @@ class Tournament2(commands.Cog, name="Tournament2"):
         )
         await self.info_channel.send(mentions, embed=embed)
 
+    async def _end_round(self):
+        pass
+
     @commands.command()
     async def start(self, ctx):
         if self.cur_tournament:
