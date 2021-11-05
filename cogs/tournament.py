@@ -399,7 +399,9 @@ class Tournament(commands.Cog, name="Tournament"):
 
         if view.value:
             await msg.edit(
-                content="Personal best deleted successfully.", delete_after=15, view=view
+                content="Personal best deleted successfully.",
+                delete_after=15,
+                view=view,
             )
             await search.delete()
         elif not view.value:

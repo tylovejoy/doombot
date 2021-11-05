@@ -154,7 +154,7 @@ class ViewPersonalBest(commands.Cog, name="Personal bests and leaderboards"):
     async def scoreboard(self, ctx, map_code, *, level):
         """Display top 10 verified/unverified records for a particular level."""
         await ctx.message.delete()
-        map_code = map_code.upper().replace('O', '0')
+        map_code = map_code.upper().replace("O", "0")
         title = f"{map_code} - LEVEL {level.upper()} - TOP 10 VERIFIED/UNVERIFIED RECORDS:\n"
         query = {
             "code": map_code,
@@ -171,7 +171,7 @@ class ViewPersonalBest(commands.Cog, name="Personal bests and leaderboards"):
     async def leaderboard(self, ctx, map_code, *, level):
         """Display top 10 verified records for a particular level."""
         await ctx.message.delete()
-        map_code = map_code.upper().replace('O', '0')
+        map_code = map_code.upper().replace("O", "0")
         title = f"{map_code} - LEVEL {level.upper()} - TOP 10 VERIFIED RECORDS:\n"
         query = {
             "code": map_code,
@@ -188,7 +188,7 @@ class ViewPersonalBest(commands.Cog, name="Personal bests and leaderboards"):
     async def worldrecord(self, ctx, map_code, level=""):
         """Display world record for a level on a particular map_code, or all levels."""
         await ctx.message.delete()
-        map_code = map_code.upper().replace('O', '0')
+        map_code = map_code.upper().replace("O", "0")
         exists = False
         url = ""
         embed = None
@@ -261,7 +261,7 @@ class ViewPersonalBest(commands.Cog, name="Personal bests and leaderboards"):
     async def levels(self, ctx, map_code):
         """Display all levels associated with a particular map_code."""
         await ctx.message.delete()
-        map_code = map_code.upper().replace('O', '0')
+        map_code = map_code.upper().replace("O", "0")
         title = f"{map_code} - LEVEL NAMES:\n"
 
         level_checker = {}

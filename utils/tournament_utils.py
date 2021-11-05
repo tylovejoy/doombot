@@ -234,11 +234,13 @@ async def confirm_collection_drop(ctx, category):
         )
 
 
-async def lock_unlock(channel, role, unlock=True):
-    overwrite = channel.overwrites_for(role)
-    overwrite.send_messages = unlock
-    overwrite.attach_files = unlock
-    await channel.set_permissions(role, overwrite=overwrite)
+async def lock_unlock(channels, roles, unlock=True):
+    for channel in channels:
+        for role in roles:
+            overwrite = channel.overwrites_for(role)
+            overwrite.send_messages = unlock
+            overwrite.attach_files = unlock
+            await channel.set_permissions(role, overwrite=overwrite)
 
 
 def mentions_to_list(mentions):

@@ -95,11 +95,11 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
                 await delete_messages(message_cache)
                 return
 
-            map_code = result.map_code.replace("\"", "")
-            map_name = result.map_name.replace("\"", "")
+            map_code = result.map_code.replace('"', "")
+            map_name = result.map_name.replace('"', "")
             map_type = [convert_short_types(x.upper()) for x in result.map_type.split()]
-            creator = result.creator.replace("\"", "")
-            desc = result.desc.replace("\"", "")
+            creator = result.creator.replace('"', "")
+            desc = result.desc.replace('"', "")
         else:
             if not map_code_regex(map_code):
                 reject = await ctx.send(
@@ -149,7 +149,7 @@ class SubmitMap(commands.Cog, name="Map submission/deletion/editing"):
 
         submission = MapData(
             **dict(
-                code=map_code.replace('O', '0'),
+                code=map_code.replace("O", "0"),
                 creator=creator,
                 map_name=new_map_name,
                 desc=desc,

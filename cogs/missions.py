@@ -17,10 +17,3 @@ class Missions(commands.Cog, name="Missions for tournaments."):
 
     def __init__(self, bot):
         self.bot = bot
-
-
-
-
-
-
-

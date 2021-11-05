@@ -25,7 +25,6 @@ class TimeAttackData(EmbeddedDocument):
     attachment_url = StringField(required=True)
 
 
-
 @instance.register
 class MildcoreData(EmbeddedDocument):
     """TournamentData database document."""
@@ -44,8 +43,6 @@ class HardcoreData(EmbeddedDocument):
     name = StringField(required=True)
     record = FloatField(required=True)
     attachment_url = StringField(required=True)
-
-
 
 
 @instance.register
@@ -78,7 +75,6 @@ class TournamentMaps(EmbeddedDocument):
     bo = DictField()
 
 
-
 @instance.register
 class TournamentData(Document):
     """MapData database document."""
@@ -88,6 +84,8 @@ class TournamentData(Document):
 
     schedule_start = DateTimeField()
     schedule_end = DateTimeField()
+    unix_start = StringField()
+    unix_end = StringField()
 
     embed_dict = DictField()
 

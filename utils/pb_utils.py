@@ -59,7 +59,9 @@ def time_convert(time_input):
             return float((int(time_list[0]) * 60) + -float(time_list[1]))
         elif len(time_list) == 3:
             return float(
-                (int(time_list[0]) * 3600) + -(int(time_list[1]) * 60) + -float(time_list[2])
+                (int(time_list[0]) * 3600)
+                + -(int(time_list[1]) * 60)
+                + -float(time_list[2])
             )
         return
 

@@ -53,7 +53,7 @@ class MapGuides(commands.Cog, name="Map Guides"):
             return
 
         await ctx.message.delete()
-        map_code = map_code.upper().replace('O', '0')
+        map_code = map_code.upper().replace("O", "0")
 
         search = await Guides.find_one({"code": map_code})
         if search is None:
@@ -95,7 +95,7 @@ class MapGuides(commands.Cog, name="Map Guides"):
     async def guide(self, ctx, map_code):
         if ctx.guild is not None:
             await ctx.message.delete()
-        map_code = map_code.upper().replace('O', '0')
+        map_code = map_code.upper().replace("O", "0")
         search = await Guides.find_one({"code": map_code})
         if not search or not search.guide:
             await ctx.send(f"There are no guides for {map_code} yet.", delete_after=10)
@@ -128,7 +128,7 @@ class MapGuides(commands.Cog, name="Map Guides"):
             return
 
         await ctx.message.delete()
-        map_code = map_code.upper().replace('O', '0')
+        map_code = map_code.upper().replace("O", "0")
         search: Guides = await Guides.find_one({"code": map_code})
 
         if search is None:

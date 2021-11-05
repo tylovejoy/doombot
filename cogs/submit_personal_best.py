@@ -80,13 +80,13 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
                 await ctx.send("Personal best submission cancelled.")
                 return
 
-            map_code = result.map_code.replace("\"", "")
-            level = result.level.replace("\"", "")
-            record = result.record.replace("\"", "")
+            map_code = result.map_code.replace('"', "")
+            level = result.level.replace('"', "")
+            record = result.record.replace('"', "")
 
-        map_code = map_code.upper().replace('O', '0').replace("\"", "")
-        level = level.upper().replace("\"", "")
-        record_in_seconds = time_convert(record.replace("\"", ""))
+        map_code = map_code.upper().replace("O", "0").replace('"', "")
+        level = level.upper().replace('"', "")
+        record_in_seconds = time_convert(record.replace('"', ""))
 
         # Find currently associated levels
         level_checker = {}
@@ -254,7 +254,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
         """Delete personal best from database."""
         author = ctx.message.author
         await ctx.message.delete()
-        map_code = map_code.upper().replace('O', '0')
+        map_code = map_code.upper().replace("O", "0")
         level = level.upper()
 
         # Searches for author PB if none provided
