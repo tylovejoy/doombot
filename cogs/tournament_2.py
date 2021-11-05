@@ -17,7 +17,7 @@ from internal.database import (
     TournamentRecords,
 )
 from utils.tournament_utils import lock_unlock
-from utils.views import Confirm
+from utils.views import Confirm, BracketToggle
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -126,6 +126,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 "schedule_end": data["end_time"],
                 "unix_start": data["unix_start"],
                 "unix_end": data["unix_end"],
+                "bracket": data["bracket"]
             }
         )
         maps = {
@@ -202,6 +203,11 @@ class Tournament2(commands.Cog, name="Tournament2"):
             f"{self.bonus_role.mention} "
             f"{self.trifecta_role.mention} "
         )
+        records = self.cur_tournament.records
+        #ta = records.collection.aggregate({unwind?})
+        mc = records["mc"]
+        hc = records["hc"]
+        bo = records["bo"]
 
     @commands.command()
     async def start(self, ctx):
@@ -221,7 +227,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
             desc=(
                 "Enter tournament details in this format:\n"
                 "**Title**\n"
-                "**Start Time**\n"
+                "**Start Time** [Type _none_ if immediate start.]\n"
                 "**End Time**\n"
                 "TA_CODE - LEVEL - CREATOR\n"
                 "MC_CODE - LEVEL - CREATOR\n"
@@ -229,29 +235,47 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 "BO_CODE - LEVEL - CREATOR\n"
             ),
         )
-        wizard = await ctx.send(embed=embed)
+        view = BracketToggle(ctx.author)
+        wizard = await ctx.send(embed=embed, view=view)
         results = {}
 
         response = await self.bot.wait_for("message", check=check, timeout=30)
+        if response.content.lower() in ["cancel", "stop", "end"]:
+            await response.delete()
+            await wizard.delete()
+            return
         lines = response.content.split("\n")
+        while True:
+            if len(lines) != 7:
+                await wizard.edit(content="Message not formatted correctly. Try again.", view=view)
+                response = await self.bot.wait_for("message", check=check, timeout=30)
+                if response.content.lower() in ["cancel", "stop", "end"]:
+                    await response.delete()
+                    await wizard.delete()
+                    return
+            else:
+                break
+
 
         await wizard.delete()
         await response.delete()
-
+        results["bracket"] = view.value
         results["title"] = lines[0]
 
-        results["start_time"] = dateparser.parse(
-            lines[1], settings={"PREFER_DATES_FROM": "future"}
-        )
+        if lines[1].lower() != "none":
+            results["start_time"] = dateparser.parse(
+                lines[1], settings={"PREFER_DATES_FROM": "future"}
+            )
+        else:
+            results["start_time"] = datetime.datetime(year=1, month=1, day=1)
+
         results["end_time"] = dateparser.parse(
             lines[2], settings={"PREFER_DATES_FROM": "future"}
         )
 
-        # end_time = results["end_time"].isoformat()
         if results["start_time"]:
             delta = results["end_time"] - datetime.datetime.now()
             end_time = results["start_time"] + delta
-            # end_time = end_time.isoformat()
 
         results["unix_start"] = str(time.mktime(results["start_time"].timetuple()))[:-2]
         results["unix_end"] = str(time.mktime(end_time.timetuple()))[:-2]
@@ -261,11 +285,21 @@ class Tournament2(commands.Cog, name="Tournament2"):
         results["hc"] = parse_map(lines[5])
         results["bo"] = parse_map(lines[6])
 
+        immediate_start = f"Now"
+        sched_start = f"<t:{results['unix_start']}:R> -- <t:{results['unix_start']}:F>"
+        not_bracket = (
+            f"**{results['ta']['code']}** - {results['ta']['level']} by {results['ta']['author']}\n"
+            f"**{results['mc']['code']}** - {results['mc']['level']} by {results['mc']['author']}\n"
+            f"**{results['hc']['code']}** - {results['hc']['level']} by {results['hc']['author']}\n"
+            f"**{results['bo']['code']}** - {results['bo']['level']} by {results['bo']['author']}\n"
+        )
+        bracket = f"**{results['br']['code']}** - {results['br']['level']} by {results['br']['author']}\n"
+        
         embed = doom_embed(
             title="",
             desc=(
                 f"**{results['title']}**\n"
-                f"**Start:** <t:{results['unix_start']}:R> -- <t:{results['unix_start']}:F>\n"
+                f"**Start:** {immediate_start if lines[1].lower() == 'none' else sched_start}\n"
                 f"**End:** <t:{results['unix_end']}:R> -- <t:{results['unix_end']}:F>\n"
                 f"**{results['ta']['code']}** - {results['ta']['level']} by {results['ta']['author']}\n"
                 f"**{results['mc']['code']}** - {results['mc']['level']} by {results['mc']['author']}\n"
@@ -279,12 +313,14 @@ class Tournament2(commands.Cog, name="Tournament2"):
         await view.wait()
 
         if view.value:
-            await self._setup_db(results)
             await confirmation_msg.edit(
                 content=f"Scheduled tournament confirmed for <t:{results['unix_start']}:R> -- <t:{results['unix_start']}:F>",
                 embed=None,
                 view=view,
             )
+            await self._setup_db(results)
+            if lines[1].lower() == "none":
+                await self._start_round()
 
         elif not view.value:
             await confirmation_msg.edit(

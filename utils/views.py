@@ -309,3 +309,29 @@ class GuidePaginator(discord.ui.View):
     @discord.ui.button(label="Close", style=discord.ButtonStyle.red)
     async def close(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.stop()
+
+class BracketToggle(discord.ui.View):
+    def __init__(self, author):
+        super().__init__()
+        self.value = None
+        self.author = author
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user == self.author:
+            return True
+        return False
+    
+    @discord.ui.button(label="Bracket Mode Currently Off", style=discord.ButtonStyle.primary)
+    async def toggle(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
+        if self.value is True:
+            await interaction.response.edit_message(view=self)
+            self.value = True
+            button.label = "Bracket Mode Currently On"
+        else:
+            await interaction.response.edit_message(view=self)
+            self.value = False
+            button.label = "Bracket Mode Currently Off"
+
+    @discord.ui.dropdown
