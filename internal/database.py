@@ -81,13 +81,11 @@ class TournamentData(Document):
 
     tournament_id = IntegerField()
     name = StringField()
-
+    bracket = BooleanField()
     schedule_start = DateTimeField()
     schedule_end = DateTimeField()
     unix_start = StringField()
     unix_end = StringField()
-
-    embed_dict = DictField()
 
     maps = EmbeddedField(TournamentMaps)
     records = EmbeddedField(TournamentRecords)
@@ -189,11 +187,11 @@ class SuggestionStars(Document):
 @instance.register
 class TopThree(Document):
     """Top Three (podium) for weekly tournaments database document."""
-
-    ta_podium = ListField(IntegerField())
-    mc_podium = ListField(IntegerField())
-    hc_podium = ListField(IntegerField())
-    bonus_podium = ListField(IntegerField())
+    tournament_id = IntegerField()
+    ta_podium = ListField(IntegerField(), allow_none=True)
+    mc_podium = ListField(IntegerField(), allow_none=True)
+    hc_podium = ListField(IntegerField(), allow_none=True)
+    bonus_podium = ListField(IntegerField(), allow_none=True)
 
     class Meta:
         """MongoDb database collection name."""
