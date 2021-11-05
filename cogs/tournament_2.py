@@ -193,6 +193,16 @@ class Tournament2(commands.Cog, name="Tournament2"):
         )
         await self.info_channel.send(mentions, embed=embed)
 
+    async def _end_round(self):
+        await self._lock_all()
+        mentions = (
+            f"{self.ta_role.mention} "
+            f"{self.mc_role.mention} "
+            f"{self.hc_role.mention} "
+            f"{self.bonus_role.mention} "
+            f"{self.trifecta_role.mention} "
+        )
+
     @commands.command()
     async def start(self, ctx):
         if self.cur_tournament:
