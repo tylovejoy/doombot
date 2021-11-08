@@ -14,6 +14,18 @@ from umongo.fields import (
 
 from internal.database_init import instance
 
+@instance.register
+class AnnoucementSchedule(Document):
+    """Annoucement Schedules"""
+    embed = DictField()
+    schedule = DateTimeField()
+    mentions = StringField()
+    
+    class Meta:
+        """MongoDb database collection name."""
+
+        collection_name = "AnnoucementSchedule"
+
 
 @instance.register
 class TournamentRecordData(EmbeddedDocument):
@@ -154,18 +166,3 @@ class SuggestionStars(Document):
     async def search(cls, _id):
         return await cls.find_one({"message_id": _id})
 
-
-@instance.register
-class TopThree(Document):
-    """Top Three (podium) for weekly tournaments database document."""
-
-    tournament_id = IntegerField()
-    ta_podium = ListField(IntegerField(), allow_none=True)
-    mc_podium = ListField(IntegerField(), allow_none=True)
-    hc_podium = ListField(IntegerField(), allow_none=True)
-    bonus_podium = ListField(IntegerField(), allow_none=True)
-
-    class Meta:
-        """MongoDb database collection name."""
-
-        collection_name = "TopThree"

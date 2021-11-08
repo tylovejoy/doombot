@@ -448,3 +448,46 @@ class ClearView(discord.ui.View):
         self.value = False
         self.clear_items()
         self.stop()
+
+class ScheduleView(discord.ui.View):
+    def __init__(self, author):
+        super().__init__()
+        self.author = author
+        self.schedule = False
+        self.mentions = []
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user == self.author:
+            return True
+        return False
+    
+    @discord.ui.button(
+        label="Scheduled Annoucement Off", style=discord.ButtonStyle.primary
+    )
+    async def toggle(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if self.schedule is False:
+            self.schedule = True
+            button.label = "Scheduled Annoucement On"
+            button.style=discord.ButtonStyle.success
+            await interaction.response.edit_message(view=self)
+        else:
+            self.schedule = False
+            button.label = "Scheduled Annoucement Off"
+            button.style=discord.ButtonStyle.primary
+            await interaction.response.edit_message(view=self)
+
+    @discord.ui.select(
+        options=[
+            discord.SelectOption(label="Time Attack", value="ta"),
+            discord.SelectOption(label="Mildcore", value="mc"),
+            discord.SelectOption(label="Hardcore", value="hc"),
+            discord.SelectOption(label="Bonus", value="bo"),
+            discord.SelectOption(label="Trifecta", value="tr"),
+            discord.SelectOption(label="Bracket", value="br"),
+        ],
+        placeholder="Choose which roles to be mentioned...",
+        min_values=1,
+        max_values=6,
+    )
+    async def callback(self, select: discord.ui.Select, interaction: discord.Interaction):
+        self.mentions = select.values

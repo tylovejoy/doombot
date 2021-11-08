@@ -9,6 +9,7 @@ import dateparser
 import discord
 from discord.ext import commands, tasks
 from internal.database import (
+    AnnoucementSchedule,
     TournamentRecordData,
     TopThree,
     TournamentData,
@@ -16,7 +17,7 @@ from internal.database import (
 )
 from utils.pb_utils import time_convert, display_record
 from utils.tournament_utils import lock_unlock, category_sort, Category
-from utils.views import ClearView, Confirm, BracketToggle, StartEndToggle, TournamentChoicesNoAll, Paginator
+from utils.views import ClearView, Confirm, BracketToggle, ScheduleView, StartEndToggle, TournamentChoicesNoAll, Paginator
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -72,6 +73,8 @@ class Tournament2(commands.Cog, name="Tournament2"):
 
         logger.info("schedule_checker has started.")
         self.schedule_checker.start()
+        logger.info("annoucement_checker has started.")
+        self.annoucement_checker.start()
 
         self.guild = self.bot.get_guild(constants_bot.GUILD_ID)
 
@@ -107,6 +110,15 @@ class Tournament2(commands.Cog, name="Tournament2"):
             constants_bot.MAP_SELECT_CHANNEL_ID,
         ]:
             return True
+
+    @tasks.loop(seconds=30)
+    async def annoucement_checker(self):
+        annoucements = await AnnoucementSchedule().find({}).to_list()
+        for annoucement in annoucements:
+            if datetime.datetime.now() >= annoucement.schedule:
+                embed = discord.Embed.from_dict(annoucement.embed)
+                await self.info_channel.send(annoucement.mentions, embed=embed)
+                await annoucement.delete()
 
     @tasks.loop(seconds=30)
     async def schedule_checker(self):
@@ -268,6 +280,8 @@ class Tournament2(commands.Cog, name="Tournament2"):
             "mc": self.mc_role.mention,
             "hc": self.hc_role.mention,
             "bo": self.bonus_role.mention,
+            "tr": self.trifecta_role.mention,
+            "br": self.bracket_role.mention,
         }
         return mentions[category]
 
@@ -836,11 +850,76 @@ class Tournament2(commands.Cog, name="Tournament2"):
             embed.desc = "Timed out. Nothing will be changed."
             await wizard.edit(embed=embed)
 
-    async def _announce(self):
-        pass
+    @commands.command(
+        name="annouce"
+    )
+    async def _announce(self, ctx):
+        await ctx.message.delete()
+        def check(message: discord.Message):
+            return message.channel == ctx.channel and message.author == ctx.author
 
-    async def _announce_scheduled(self):
-        pass
+        embed = doom_embed(
+            title="Annoucement Wizard",
+            desc=(
+                "Toggle schedule on or off with the button. Select roles to be mentioned.\n"
+                "Put the scheduled time on the first line if needed.\n\n"
+                "_Use this format as shown:_\n"
+                "**SCHEDULED_TIME** [if applicable]\n"
+                "**ANNOUCEMENT TITLE**\n"
+                "**ANNOUCEMENT CONTENTS**"
+            )
+        )
+        view = ScheduleView(ctx.author)
+        wizard = await ctx.send(embed=embed, view=view, delete_after=30)
+        response = await self.bot.wait_for("message", check=check, timeout=30)
+        annoucement = response.content.split("\n")
+        mentions = ""
+        for m in view.mentions:
+            mentions += self._mentions(m)
+        if view.schedule:
+            schedule = dateparser.parse(
+                annoucement[0], settings={"PREFER_DATES_FROM": "future"}
+            )
+            unix_schedule = str(time.mktime(schedule.timetuple()))[:-2]
+            title = annoucement[1]
+            content = "\n".join(annoucement[2:])
+            embed = doom_embed(title="Announcement")
+            embed.add_field(name=title, value=content)
+            embed.add_field(name="Scheduled:", value=f"<t:{unix_schedule}:r> - <t:{unix_schedule}:F>")
+        else:
+            title = annoucement[0]
+            content = "\n".join(annoucement[1:])
+            embed = doom_embed(title="Announcement")
+            embed.add_field(name=title, value=content)
+        
+        view = Confirm("Announcement", ctx.author)
+        confirmation_msg = await ctx.send("Is this correct?", embed=embed, view=view)
+        await view.wait()
+
+        if view.value:
+            if view.schedule:
+                embed.remove_field(-1)
+                document = AnnoucementSchedule(**{
+                    "embed": embed.to_dict(),
+                    "schedule": schedule,
+                    "mentions": mentions,      
+                })
+                await document.commit()
+                return
+            await self.info_channel.send(f"{mentions}", embed=embed)
+            await confirmation_msg.edit(delete_after=15, view=view)
+        elif not view.value:
+            await confirmation_msg.edit(
+                content="Not accepted. `/announce` will not run.",
+                delete_after=15,
+                view=view,
+            )
+        elif view.value is None:
+            await confirmation_msg.edit(
+                content="Confirmation timed out! `/announce` will not run.",
+                view=view,
+                delete_after=15,
+            )
 
     @commands.command(name="halloffame", help="", brief="", aliases=["hof", "fame"])
     async def _hall_of_fame(self, ctx):
@@ -881,7 +960,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 "__Bonus__\n" + "\n".join(bo_podium)
             )
             top_three = hall_of_fame(
-                f"Weekly Tournament - Top 3 ({t.tournament_id})",
+                f"Weekly Tournament - Top 3 (<t:{t.unix_start}:F>)",
                 desc=top_three_desc,
             )
             embeds.append(top_three)
