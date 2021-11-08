@@ -306,9 +306,9 @@ class Tournament2(commands.Cog, name="Tournament2"):
         self.cur_tournament = await TournamentData().find_one(
             sort=[("tournament_id", -1)], limit=1
         )
+        await self._lock_all()
         records = self.cur_tournament.records
         if not self.cur_tournament.bracket:
-            await self._lock_all()
             mentions = (
                 f"{self.ta_role.mention}"
                 f"{self.mc_role.mention}"
@@ -325,13 +325,6 @@ class Tournament2(commands.Cog, name="Tournament2"):
             await self._export_records(hc, Category.HARDCORE.value, "Hardcore")
             await self._export_records(bo, Category.BONUS.value, "Bonus")
         else:
-            locks = {
-                "ta": await self._lock_ta(),
-                "mc": await self._lock_mc(),
-                "hc": await self._lock_hc(),
-                "bo": await self._lock_bo()
-            }
-            locks[self.cur_tournament.bracket_cat]
             mentions = (
                 f"{self._mentions(self.cur_tournament.bracket_cat)}"
                 f"{self.trifecta_role.mention}"
