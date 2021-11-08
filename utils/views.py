@@ -314,6 +314,7 @@ class GuidePaginator(discord.ui.View):
 class BracketToggle(discord.ui.View):
     def __init__(self, author):
         super().__init__()
+        self.dropdown = CategoryDropdown()
         self.bracket = False
         self.bracket_cat = None
         self.author = author
@@ -330,24 +331,26 @@ class BracketToggle(discord.ui.View):
         if self.bracket is False:
             self.bracket = True
             button.label = "Bracket Mode Currently On"
+            self.add_item(self.dropdown)
             await interaction.response.edit_message(view=self)
         else:
             self.bracket = False
             button.label = "Bracket Mode Currently Off"
+            self.remove_item(self.dropdown)
+            self.dropdown.bracket_cat = None
             await interaction.response.edit_message(view=self)
 
-    @discord.ui.select(
-        placeholder="Choose a category",
-        min_values=1,
-        max_values=1,
-        options=[
+
+class CategoryDropdown(discord.ui.Select):
+    def __init__(self):
+        self.bracket_cat = None
+        options = [
             discord.SelectOption(label="Time Attack", value="ta"),
             discord.SelectOption(label="Mildcore", value="mc"),
             discord.SelectOption(label="Hardcore", value="hc"),
             discord.SelectOption(label="Bonus", value="bo"),
-        ],
-    )
-    async def callback(
-        self, select: discord.ui.select, interaction: discord.Interaction
-    ):
-        self.bracket_cat = select.values[0]
+        ]
+        super().__init__(placeholder="Choose a category...", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        self.bracket_cat = self.values[0]

@@ -464,7 +464,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
         await response.delete()
 
         results["bracket"] = view.bracket
-        results["bracket_cat"] = view.bracket_cat
+        results["bracket_cat"] = view.dropdown.bracket_cat
         results["title"] = lines[0]
 
         if lines[1].lower() != "now":
