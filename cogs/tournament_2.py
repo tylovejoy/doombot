@@ -17,7 +17,7 @@ from internal.database import (
 )
 from utils.pb_utils import time_convert, display_record
 from utils.tournament_utils import lock_unlock, category_sort, Category
-from utils.views import ClearView, Confirm, BracketToggle, MissionCategories, ScheduleView, StartEndToggle, TournamentChoicesNoAll, Paginator
+from utils.views import ClearView, Confirm, BracketToggle, MissionCategories, RemoveMissions, ScheduleView, StartEndToggle, TournamentChoicesNoAll, Paginator
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -196,29 +196,29 @@ class Tournament2(commands.Cog, name="Tournament2"):
             "bo": [],
         }
         tournament.missions = {
-            "ta": {
-                "easy": None,
-                "medium": None,
-                "hard": None,
-                "expert": None,
+            "easy": {
+                "ta": None,
+                "mc": None,
+                "hc": None,
+                "bo": None,
             },
-            "mc": {
-                "easy": None,
-                "medium": None,
-                "hard": None,
-                "expert": None,
+            "medium": {
+                "ta": None,
+                "mc": None,
+                "hc": None,
+                "bo": None,
             },
-            "hc": {
-                "easy": None,
-                "medium": None,
-                "hard": None,
-                "expert": None,
+            "hard": {
+                "ta": None,
+                "mc": None,
+                "hc": None,
+                "bo": None,
             },
-            "bo": {
-                "easy": None,
-                "medium": None,
-                "hard": None,
-                "expert": None,
+            "expert": {
+                "ta": None,
+                "mc": None,
+                "hc": None,
+                "bo": None,
             },
             "general": {},
         }
@@ -1037,19 +1037,19 @@ class Tournament2(commands.Cog, name="Tournament2"):
         else:
             missions = self.cur_tournament.missions
             lines = [line.split(" - ") for line in response.content.split("\n")]
-            missions["ta"][view.category] = {
+            missions[view.category]["ta"] = {
                 "type": lines[0][0],
                 "target": lines[0][1],
             }
-            missions["mc"][view.category] = {
+            missions[view.category]["mc"] = {
                 "type": lines[1][0],
                 "target": lines[1][1],
             }
-            missions["hc"][view.category] = {
+            missions[view.category]["hc"] = {
                 "type": lines[2][0],
                 "target": lines[2][1],
             }
-            missions["bo"][view.category] = {
+            missions[view.category]["bo"] = {
                 "type": lines[3][0],
                 "target": lines[3][1],
             }
@@ -1083,8 +1083,37 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 delete_after=15,
             )
 
-    async def _remove_missions(self):
-        pass
+    @commands.command(
+        name="removemissions",
+        help="Removes all missions from the selected mission category."
+    )
+    async def _remove_missions(self, ctx):
+        await self._update_tournament()
+        embed = doom_embed(
+            title="Remove Missions Wizard", 
+            desc="This will remove all missions in the selected mission category.",
+        )
+        view = RemoveMissions(ctx.author)
+        confirmation_msg = await ctx.send(embed=embed, view=view, delete_after=30)
+        await view.wait()
+
+        if view.value:
+            await confirmation_msg.edit(content="Confirmed. Missions removed.", delete_after=15, view=view)
+            self.cur_tournament.missions[view.category] = {}
+            await self.cur_tournament.commit()
+        elif not view.value:
+            await confirmation_msg.edit(
+                content="Not accepted.",
+                delete_after=15,
+                view=view,
+            )
+        elif view.value is None:
+            await confirmation_msg.edit(
+                content="Confirmation timed out!",
+                view=view,
+                delete_after=15,
+            )
+        
 
     async def _mission_setup(self):
         pass
