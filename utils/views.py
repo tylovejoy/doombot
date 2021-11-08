@@ -491,3 +491,51 @@ class ScheduleView(discord.ui.View):
     )
     async def callback(self, select: discord.ui.Select, interaction: discord.Interaction):
         self.mentions = select.values
+
+class RemoveMissions(discord.ui.View):
+    def __init__(self, author):
+        super().__init__()
+        self.category = None
+        self.author = author
+        self.value = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user == self.author:
+            return True
+        return False
+
+    @discord.ui.button(label="Accept", style=discord.ButtonStyle.green)
+    async def confirm(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
+        await interaction.response.send_message(
+            f"{self.name} accepted.", ephemeral=True
+        )
+        self.value = True
+        self.clear_items()
+        self.stop()
+
+    # This one is similar to the confirmation button except sets the inner value to `False`
+    @discord.ui.button(label="Reject", style=discord.ButtonStyle.red)
+    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.send_message(
+            f"{self.name} rejected.", ephemeral=True
+        )
+        self.value = False
+        self.clear_items()
+        self.stop()
+    
+    @discord.ui.select(
+        options=[
+            discord.SelectOption(label="General", value="general"),
+            discord.SelectOption(label="Easy", value="easy"),
+            discord.SelectOption(label="Medium", value="medium"),
+            discord.SelectOption(label="Hard", value="hard"),
+            discord.SelectOption(label="Expert", value="expert"),
+        ],
+        placeholder="Choose which categories to remove.",
+        min_values=1,
+        max_values=5,
+    )
+    async def callback(self, select: discord.ui.Select, interaction: discord.Interaction):
+        self.category = select.values
