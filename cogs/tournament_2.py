@@ -169,10 +169,10 @@ class Tournament2(commands.Cog, name="Tournament2"):
             "bo": [],
         }
         tournament.missions = {
-            "ta": [],
-            "mc": [],
-            "hc": [],
-            "bo": [],
+            "ta": {},
+            "mc": {},
+            "hc": {},
+            "bo": {},
         }
         await tournament.commit()
         self.cur_tournament = tournament
@@ -720,6 +720,34 @@ class Tournament2(commands.Cog, name="Tournament2"):
             await paginator.delete()
         else:
             await ctx.send(embed=embeds[0], delete_after=120)
+
+    async def _change_tournament_time(self):
+        pass
+
+    async def _cancel_tournament(self):
+        pass
+
+    async def _clear(self):
+        pass
+
+    async def _announce(self):
+        pass
+
+    async def _announce_scheduled(self):
+        pass
+
+    async def _hall_of_fame(self):
+        pass
+
+    async def _add_missions(self):
+        pass
+
+    async def _remove_missions(self):
+        pass
+
+    async def _mission_setup(self):
+        pass
+
 
 
 def setup(bot):

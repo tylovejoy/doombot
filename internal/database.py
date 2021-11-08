@@ -37,7 +37,7 @@ class TournamentRecords(EmbeddedDocument):
 
 @instance.register
 class TournamentMaps(EmbeddedDocument):
-    """Records."""
+    """Maps."""
 
     ta = DictField()
     mc = DictField()

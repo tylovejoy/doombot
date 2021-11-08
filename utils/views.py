@@ -354,3 +354,30 @@ class CategoryDropdown(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         self.bracket_cat = self.values[0]
+
+
+class MissionCategories(discord.ui.View):
+    def __init__(self, author):
+        super().__init__()
+        self.author = author
+        self.category = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user == self.author:
+            return True
+        return False
+
+    @discord.ui.select(
+        options=[
+            discord.SelectOption(label="General", value="general"),
+            discord.SelectOption(label="Easy", value="easy"),
+            discord.SelectOption(label="Medium", value="medium"),
+            discord.SelectOption(label="Hard", value="hard"),
+            discord.SelectOption(label="Expert", value="expert"),
+        ],
+        placeholder="Choose a category...",
+        min_values=1,
+        max_values=1,
+    )
+    async def callback(self, select: discord.ui.Select, interaction: discord.Interaction):
+        self.category = select.values[0]
