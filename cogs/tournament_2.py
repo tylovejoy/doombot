@@ -17,7 +17,7 @@ from internal.database import (
 )
 from utils.pb_utils import time_convert, display_record
 from utils.tournament_utils import lock_unlock, category_sort, Category
-from utils.views import ClearView, Confirm, BracketToggle, ScheduleView, StartEndToggle, TournamentChoicesNoAll, Paginator
+from utils.views import ClearView, Confirm, BracketToggle, MissionCategories, ScheduleView, StartEndToggle, TournamentChoicesNoAll, Paginator
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -196,10 +196,31 @@ class Tournament2(commands.Cog, name="Tournament2"):
             "bo": [],
         }
         tournament.missions = {
-            "ta": {},
-            "mc": {},
-            "hc": {},
-            "bo": {},
+            "ta": {
+                "easy": None,
+                "medium": None,
+                "hard": None,
+                "expert": None,
+            },
+            "mc": {
+                "easy": None,
+                "medium": None,
+                "hard": None,
+                "expert": None,
+            },
+            "hc": {
+                "easy": None,
+                "medium": None,
+                "hard": None,
+                "expert": None,
+            },
+            "bo": {
+                "easy": None,
+                "medium": None,
+                "hard": None,
+                "expert": None,
+            },
+            "general": {},
         }
         await tournament.commit()
         self.cur_tournament = tournament
@@ -980,8 +1001,87 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 continue
             podium.append(f"`{make_ordinal(i)}` {member.mention}")
 
-    async def _add_missions(self):
-        pass
+    @commands.command(
+        name="addmission",
+        help="Add missions to a category."
+    )
+    async def _add_missions(self, ctx):
+        await self._update_tournament()
+        embed = doom_embed(
+            title="Add Missions Wizard", 
+            desc=(
+                "Add missions for each tournament category (TA, MC, etc.) for the chosen mission cateogry.\n"
+                "If adding general missions, follow the same format as below."
+                "_Use this format as shown:_\n"
+                "**TA MISSION TYPE** - **TA MISSION TARGET**\n"
+                "**MC MISSION TYPE** - **MC MISSION TARGET**\n"
+                "**HC MISSION TYPE** - **HC MISSION TARGET**\n"
+                "**BO MISSION TYPE** - **BO MISSION TARGET**\n"
+            )
+        )
+        view = MissionCategories(ctx.author)
+        await ctx.send(embed=embed, view=view, delete_after=30)
+        def check(message: discord.Message):
+            return message.channel == ctx.channel and message.author == ctx.author
+        response = await self.bot.wait_for("message", check=check, timeout=30)
+
+        if view.category == "general":
+            lines = [line.split(" - ") for line in response.content.split("\n")]
+            missions = self.cur_tournament.missions["general"]
+            for line in lines:
+                missions[str(line)] = {
+                    "type": line[0],
+                    "target": line[1]
+                }
+            self.cur_tournament.missions["general"] = missions
+        else:
+            missions = self.cur_tournament.missions
+            lines = [line.split(" - ") for line in response.content.split("\n")]
+            missions["ta"][view.category] = {
+                "type": lines[0][0],
+                "target": lines[0][1],
+            }
+            missions["mc"][view.category] = {
+                "type": lines[1][0],
+                "target": lines[1][1],
+            }
+            missions["hc"][view.category] = {
+                "type": lines[2][0],
+                "target": lines[2][1],
+            }
+            missions["bo"][view.category] = {
+                "type": lines[3][0],
+                "target": lines[3][1],
+            }
+            self.cur_tournament.missions = missions
+
+        formatted = ""
+        for key in missions.keys():
+            formatted += f"{key} {missions[key]['type']} {missions[key]['target']}"
+        embed = doom_embed(
+            title="Missions Preview",
+            desc=formatted
+        )
+
+        view = Confirm("Missions Confirmation", ctx.author)
+        confirmation_msg = await ctx.send("Is this correct?", embed=embed, view=view)
+        await view.wait()
+
+        if view.value:
+            await confirmation_msg.edit(content="Confirmed. Missions added.", delete_after=15, view=view)
+            await self.cur_tournament.commit()
+        elif not view.value:
+            await confirmation_msg.edit(
+                content="Not accepted.",
+                delete_after=15,
+                view=view,
+            )
+        elif view.value is None:
+            await confirmation_msg.edit(
+                content="Confirmation timed out!",
+                view=view,
+                delete_after=15,
+            )
 
     async def _remove_missions(self):
         pass
