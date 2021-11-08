@@ -4,7 +4,7 @@ import operator
 import time
 import sys
 from logging import getLogger
-from utils.embeds import doom_embed
+from utils.embeds import doom_embed, hall_of_fame
 import dateparser
 import discord
 from discord.ext import commands, tasks
@@ -16,7 +16,7 @@ from internal.database import (
 )
 from utils.pb_utils import time_convert, display_record
 from utils.tournament_utils import lock_unlock, category_sort, Category
-from utils.views import Confirm, BracketToggle, TournamentChoicesNoAll, Paginator
+from utils.views import ClearView, Confirm, BracketToggle, StartEndToggle, TournamentChoicesNoAll, Paginator
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -36,6 +36,22 @@ def display_maps(maps):
     return f"{maps['code']} - {maps['level']} by {maps['author']}"
 
 
+def make_ordinal(n):
+    """
+    Convert an integer into its ordinal representation::
+
+        make_ordinal(0)   => '0th'
+        make_ordinal(3)   => '3rd'
+        make_ordinal(122) => '122nd'
+        make_ordinal(213) => '213th'
+    """
+    n = int(n)
+    suffix = ["th", "st", "nd", "rd", "th"][min(n % 10, 4)]
+    if 11 <= (n % 100) <= 13:
+        suffix = "th"
+    return str(n) + suffix
+
+
 def viewable_channels():
     def predicate(ctx):
         return ctx.channel.id in [
@@ -44,7 +60,6 @@ def viewable_channels():
             constants_bot.EXPORT_SS_CHANNEL_ID,
             constants_bot.MAP_SELECT_CHANNEL_ID,
         ]
-
     return commands.check(predicate)
 
 
@@ -303,9 +318,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
         await self.info_channel.send(mentions, embed=embed)
 
     async def _end_round(self):
-        self.cur_tournament = await TournamentData().find_one(
-            sort=[("tournament_id", -1)], limit=1
-        )
+        await self._update_tournament()
         await self._lock_all()
         records = self.cur_tournament.records
         if not self.cur_tournament.bracket:
@@ -364,9 +377,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
             await self.export_channel.send(embed=embed)
 
     async def _find_records(self, ctx, category):
-        self.cur_tournament = await TournamentData().find_one(
-            {"tournament_id": self.cur_tournament.tournament_id}
-        )
+        await self._update_tournament()
         records = self.cur_tournament.records[category.value]
         author_record = None
         pos = None
@@ -461,30 +472,14 @@ class Tournament2(commands.Cog, name="Tournament2"):
         results["title"] = lines[0]
 
         if lines[1].lower() != "now":
-            results["start_time"] = dateparser.parse(
-                lines[1], settings={"PREFER_DATES_FROM": "future"}
-            )
-        else:
-            results["start_time"] = datetime.datetime(year=1, month=1, day=1)
-
-        results["end_time"] = dateparser.parse(
-            lines[2], settings={"PREFER_DATES_FROM": "future"}
-        )
-
-        if results["start_time"] != datetime.datetime(year=1, month=1, day=1):
-            delta = results["end_time"] - datetime.datetime.now()
-            results["end_time"] = results["start_time"] + delta
-            results["unix_start"] = str(time.mktime(results["start_time"].timetuple()))[
-                :-2
-            ]
+            results["start_time"], results["unix_start"] = await self._start_time(lines[1], now=False)
             start = f"<t:{results['unix_start']}:R> -- <t:{results['unix_start']}:F>"
         else:
-            results["unix_start"] = str(
-                time.mktime(datetime.datetime.utcnow().timetuple())
-            )[:-2]
+            results["start_time"], results["unix_start"] = await self._start_time()
             start = f"Now"
 
-        results["unix_end"] = str(time.mktime(results["end_time"].timetuple()))[:-2]
+        results["end_time"], results["unix_end"] = await self._end_time(lines[2]), results["start_time"])
+
 
         if not results["bracket"]:
             results["ta"] = parse_map(lines[3])
@@ -687,9 +682,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
     @viewable_channels()
     async def board(self, ctx, category=None):
         await ctx.message.delete()
-        self.cur_tournament = await TournamentData().find_one(
-            {"tournament_id": self.cur_tournament.tournament_id}
-        )
+        await self._update_tournament()
 
         if category is None:
             view = TournamentChoicesNoAll(ctx.author)
@@ -721,14 +714,127 @@ class Tournament2(commands.Cog, name="Tournament2"):
         else:
             await ctx.send(embed=embeds[0], delete_after=120)
 
-    async def _change_tournament_time(self):
+    async def _update_tournament(self):
+        self.cur_tournament = await TournamentData().find_one(
+            {"tournament_id": self.cur_tournament.tournament_id}
+        )
+
+    @commands.command(
+        name="changetime",
+        help="Change tournament start or end time. Changing the start time will also change the end time to stay the same length.",
+        brief="Change tournament start or end time."
+    )
+    async def _change_tournament_time(self, ctx):
+        # await self._update_tournament()
+        # t = self.cur_tournament
+        # await ctx.message.delete()
+        # def check(message: discord.Message):
+        #     return message.channel == ctx.channel and message.author == ctx.author
+
+        # embed = doom_embed(
+        #     title="Change tournament start/end time.",
+        #     desc=(
+        #         "Use the button to toggle start/end time modification.\n"
+        #         "Then respond with what the time should be. (e.g. 10 minutes, 1 week, etc.)\n"
+        #         "If you edit the start time, the end time will automatically be changed to stay the same length as initally set."
+        #     )
+        # )
+        # view = StartEndToggle(ctx.author)
+        # wizard = await ctx.send(embed=embed, view=view, delete_after=30)
+        # response = await self.bot.wait_for("message", check=check, timeout=30)
+
+        # if not view.end:
+        #     t.start_time, t.unix_start = await self._start_time(response.content, now=False)
+        #     start = f"<t:{t.unix_start}:R> -- <t:{t.unix_start}:F>"
+        #     t.end_time, t.unix_end = await self._end_time(t.start_time)
+        # else:
+        #     t.end_time, t.unix_end = await self._end_time(), t.start_time)
         pass
 
-    async def _cancel_tournament(self):
-        pass
+    async def _start_time(self, start=None, now=True):
+        if not now:
+            start_time = dateparser.parse(
+                start, settings={"PREFER_DATES_FROM": "future"}
+            )
+            unix_start = str(time.mktime(start_time.timetuple()))[:-2]
+        else:
+            start_time = datetime.datetime(year=1, month=1, day=1)
+            unix_start = str(
+                time.mktime(datetime.datetime.utcnow().timetuple())
+            )[:-2]
+        return start_time, unix_start
+    
+    async def _end_time(self, end, start):
+        end_time = dateparser.parse(
+            end, settings={"PREFER_DATES_FROM": "future"}
+        )
+        if start != datetime.datetime(year=1, month=1, day=1):
+            delta = end_time - datetime.datetime.now()
+            end_time = start + delta
+        unix_end = str(time.mktime(end_time.timetuple()))[:-2]
+        return end_time, unix_end
 
-    async def _clear(self):
-        pass
+    @commands.command(
+        name="canceltournament",
+        help="Cancel the current active/scheduled tournament. Complete deletetion.",
+        brief="Cancel the current active/scheduled tournament."
+    )
+    async def _cancel_tournament(self, ctx):
+        await self._update_tournament()
+        if self.cur_tournament.schedule_end == datetime.datetime(year=1, month=1, day=1):
+            await ctx.send("There is no active or scheduled tournament.", delete_after=15)
+            return
+
+        view = Confirm("Cancel Tournament Wizard", ctx.author)
+        confirmation_msg = await ctx.send("Do you want to delete this tournament?", view=view)
+        await view.wait()
+
+        if view.value:
+            await confirmation_msg.edit(
+                content=f"Deleting the active/scheduled tournament.",
+                embed=None,
+                view=view,
+            )
+            await self.cur_tournament.delete()
+
+        elif not view.value:
+            await confirmation_msg.edit(
+                content="Not accepted. Nothing will be changed."
+            )
+        elif view.value is None:
+            await confirmation_msg.edit(content="Timed out. Nothing will be changed.")
+
+    async def _clear_category(self, category):
+        await self._update_tournament()
+        self.cur_tournament.records[category] = []
+        await self.cur_tournament.commit()
+
+    @commands.command(
+        name="clear",
+        help="Clear one or more record categories."
+    )
+    async def _clear(self, ctx):
+        await ctx.message.delete()
+        embed = doom_embed(title="Clear Records Wizard", desc="Select which categories to clear.")
+        view = ClearView(ctx.author)
+        wizard = await ctx.send(embed=embed, view=view)
+        await view.wait()
+        if view.value:
+            embed.desc = "Clearing the selected categories."
+            await wizard.edit(
+                embed=embed,
+                view=view,
+            )
+            for cat in view.dropdown.bracket_cat:
+                await self._clear_category(cat)
+
+        elif not view.value:
+            embed.desc = "Not accepted. Nothing will be changed."
+            await wizard.edit(embed=embed)
+
+        elif view.value is None:
+            embed.desc = "Timed out. Nothing will be changed."
+            await wizard.edit(embed=embed)
 
     async def _announce(self):
         pass
@@ -736,8 +842,64 @@ class Tournament2(commands.Cog, name="Tournament2"):
     async def _announce_scheduled(self):
         pass
 
-    async def _hall_of_fame(self):
-        pass
+    @commands.command(name="halloffame", help="", brief="", aliases=["hof", "fame"])
+    async def _hall_of_fame(self, ctx):
+        all_tournaments = await TournamentData.find({}, sort=[("tournament_id", -1)]).to_list()
+
+        embeds = []
+
+        bracket_desc = (
+            f"{self.ta_role.mention}\n"
+            "`1st` <@593838073012289536>\n"
+            "`2nd` <@593838073012289536>\n"
+            "\n\n"
+            f"{self.mc_role.mention}\n"
+            "`1st` <@593838073012289536>\n"
+            "\n\n"
+            f"{self.hc_role.mention}\n"
+            "`1st` <@294502010445758464>\n"
+            "`2nd` @Jazzy\n"
+        )
+
+        bracket = hall_of_fame(
+            "Bracket Winners",
+            desc=bracket_desc,
+        )
+
+        for t in all_tournaments:
+            if t.bracket == True:
+                continue
+            ta_podium = self._podium(t.records["ta"])
+            mc_podium = self._podium(t.records["mc"])
+            hc_podium = self._podium(t.records["hc"])
+            bo_podium = self._podium(t.records["bo"])
+
+            top_three_desc = (
+                "__Time Attack__\n" + "\n".join(ta_podium) + f"\n\n"
+                "__Mildcore__\n" + "\n".join(mc_podium) + "\n\n"
+                "__Hardcore__\n" + "\n".join(hc_podium) + "\n\n"
+                "__Bonus__\n" + "\n".join(bo_podium)
+            )
+            top_three = hall_of_fame(
+                f"Weekly Tournament - Top 3 ({t.tournament_id})",
+                desc=top_three_desc,
+            )
+            embeds.append(top_three)
+            view = Paginator([bracket, top_three], ctx.author)
+            paginator = await ctx.send(embed=view.formatted_pages[0], view=view)
+            await view.wait()
+            await paginator.delete()
+
+    async def _podium(self, records):
+        records = sorted(records, key=operator.itemgetter("record"))
+        podium =[]
+        for i, _id in enumerate(records):
+            if i == 3:
+                break
+            member = self.guild.get_member(int(_id))
+            if member is None:
+                continue
+            podium.append(f"`{make_ordinal(i)}` {member.mention}")
 
     async def _add_missions(self):
         pass
@@ -747,7 +909,6 @@ class Tournament2(commands.Cog, name="Tournament2"):
 
     async def _mission_setup(self):
         pass
-
 
 
 def setup(bot):
