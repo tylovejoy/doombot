@@ -206,11 +206,11 @@ class TournamentChoices(discord.ui.View):
         min_values=1,
         max_values=1,
         options=[
-            discord.SelectOption(label="Time Attack", value="0"),
-            discord.SelectOption(label="Mildcore", value="1"),
-            discord.SelectOption(label="Hardcore", value="2"),
-            discord.SelectOption(label="Bonus", value="3"),
-            discord.SelectOption(label="All", value="4"),
+            discord.SelectOption(label="Time Attack", value="ta"),
+            discord.SelectOption(label="Mildcore", value="mc"),
+            discord.SelectOption(label="Hardcore", value="hc"),
+            discord.SelectOption(label="Bonus", value="bo"),
+            discord.SelectOption(label="All", value="all"),
         ],
     )
     async def callback(
@@ -237,16 +237,16 @@ class TournamentChoicesNoAll(discord.ui.View):
         min_values=1,
         max_values=1,
         options=[
-            discord.SelectOption(label="Time Attack", value="0"),
-            discord.SelectOption(label="Mildcore", value="1"),
-            discord.SelectOption(label="Hardcore", value="2"),
-            discord.SelectOption(label="Bonus", value="3"),
+            discord.SelectOption(label="Time Attack", value="ta"),
+            discord.SelectOption(label="Mildcore", value="mc"),
+            discord.SelectOption(label="Hardcore", value="hc"),
+            discord.SelectOption(label="Bonus", value="bo"),
         ],
     )
     async def callback(
         self, select: discord.ui.select, interaction: discord.Interaction
     ):
-        self.value = int(select.values[0])
+        self.value = select.values[0]
         self.clear_items()
         self.stop()
 
@@ -310,28 +310,44 @@ class GuidePaginator(discord.ui.View):
     async def close(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.stop()
 
+
 class BracketToggle(discord.ui.View):
     def __init__(self, author):
         super().__init__()
-        self.value = None
+        self.bracket = False
+        self.bracket_cat = None
         self.author = author
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user == self.author:
             return True
         return False
-    
-    @discord.ui.button(label="Bracket Mode Currently Off", style=discord.ButtonStyle.primary)
-    async def toggle(
-        self, button: discord.ui.Button, interaction: discord.Interaction
-    ):
-        if self.value is True:
-            await interaction.response.edit_message(view=self)
-            self.value = True
-            button.label = "Bracket Mode Currently On"
-        else:
-            await interaction.response.edit_message(view=self)
-            self.value = False
-            button.label = "Bracket Mode Currently Off"
 
-    @discord.ui.dropdown
+    @discord.ui.button(
+        label="Bracket Mode Currently Off", style=discord.ButtonStyle.primary
+    )
+    async def toggle(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if self.bracket is False:
+            self.bracket = True
+            button.label = "Bracket Mode Currently On"
+            await interaction.response.edit_message(view=self)
+        else:
+            self.bracket = False
+            button.label = "Bracket Mode Currently Off"
+            await interaction.response.edit_message(view=self)
+
+    @discord.ui.select(
+        placeholder="Choose a category",
+        min_values=1,
+        max_values=1,
+        options=[
+            discord.SelectOption(label="Time Attack", value="ta"),
+            discord.SelectOption(label="Mildcore", value="mc"),
+            discord.SelectOption(label="Hardcore", value="hc"),
+            discord.SelectOption(label="Bonus", value="bo"),
+        ],
+    )
+    async def callback(
+        self, select: discord.ui.select, interaction: discord.Interaction
+    ):
+        self.bracket_cat = select.values[0]

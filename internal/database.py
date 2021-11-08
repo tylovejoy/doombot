@@ -16,37 +16,7 @@ from internal.database_init import instance
 
 
 @instance.register
-class TimeAttackData(EmbeddedDocument):
-    """TournamentData database document."""
-
-    posted_by = IntegerField(required=True, unique=True)
-    name = StringField(required=True)
-    record = FloatField(required=True)
-    attachment_url = StringField(required=True)
-
-
-@instance.register
-class MildcoreData(EmbeddedDocument):
-    """TournamentData database document."""
-
-    posted_by = IntegerField(required=True, unique=True)
-    name = StringField(required=True)
-    record = FloatField(required=True)
-    attachment_url = StringField(required=True)
-
-
-@instance.register
-class HardcoreData(EmbeddedDocument):
-    """TournamentData database document."""
-
-    posted_by = IntegerField(required=True, unique=True)
-    name = StringField(required=True)
-    record = FloatField(required=True)
-    attachment_url = StringField(required=True)
-
-
-@instance.register
-class BonusData(EmbeddedDocument):
+class TournamentRecordData(EmbeddedDocument):
     """TournamentData database document."""
 
     posted_by = IntegerField(required=True, unique=True)
@@ -59,10 +29,10 @@ class BonusData(EmbeddedDocument):
 class TournamentRecords(EmbeddedDocument):
     """Records."""
 
-    ta = ListField(EmbeddedField(TimeAttackData), allow_none=True)
-    mc = ListField(EmbeddedField(MildcoreData), allow_none=True)
-    hc = ListField(EmbeddedField(HardcoreData), allow_none=True)
-    bo = ListField(EmbeddedField(BonusData), allow_none=True)
+    ta = ListField(EmbeddedField(TournamentRecordData), allow_none=True)
+    mc = ListField(EmbeddedField(TournamentRecordData), allow_none=True)
+    hc = ListField(EmbeddedField(TournamentRecordData), allow_none=True)
+    bo = ListField(EmbeddedField(TournamentRecordData), allow_none=True)
 
 
 @instance.register
@@ -82,6 +52,7 @@ class TournamentData(Document):
     tournament_id = IntegerField()
     name = StringField()
     bracket = BooleanField()
+    bracket_cat = StringField()
     schedule_start = DateTimeField()
     schedule_end = DateTimeField()
     unix_start = StringField()
@@ -187,6 +158,7 @@ class SuggestionStars(Document):
 @instance.register
 class TopThree(Document):
     """Top Three (podium) for weekly tournaments database document."""
+
     tournament_id = IntegerField()
     ta_podium = ListField(IntegerField(), allow_none=True)
     mc_podium = ListField(IntegerField(), allow_none=True)
