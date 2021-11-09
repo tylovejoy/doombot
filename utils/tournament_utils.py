@@ -3,9 +3,6 @@ from logging import getLogger
 
 import discord
 
-from internal.database import (
-    TopThree,
-)
 from utils.embeds import doom_embed
 from utils.pb_utils import display_record
 from utils.views import Confirm, Paginator

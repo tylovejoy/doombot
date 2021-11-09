@@ -64,7 +64,7 @@ class TournamentData(Document):
     tournament_id = IntegerField()
     name = StringField()
     bracket = BooleanField()
-    bracket_cat = StringField()
+    bracket_cat = StringField(allow_none=True)
     schedule_start = DateTimeField()
     schedule_end = DateTimeField()
     unix_start = StringField()
@@ -166,3 +166,10 @@ class SuggestionStars(Document):
     async def search(cls, _id):
         return await cls.find_one({"message_id": _id})
 
+@instance.register
+class ExperiencePoints(Document):
+    """XP Points"""
+
+    user_id = IntegerField()
+    xp = IntegerField()
+    coins = IntegerField()

@@ -355,10 +355,10 @@ class CategoryDropdown(discord.ui.Select):
         super().__init__(placeholder="Choose a category...", min_values=1, max_values=max_values, options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        if len(self.bracket_cat) == 1:
-            self.category = self.bracket_cat[0]
+        if len(self.values) == 1:
+            self.bracket_cat = self.values[0]
         else:
-            self.category = self.bracket_cat
+            self.bracket_cat = self.values
 
 
 class MissionCategories(discord.ui.View):
@@ -433,7 +433,7 @@ class ClearView(discord.ui.View):
         self, button: discord.ui.Button, interaction: discord.Interaction
     ):
         await interaction.response.send_message(
-            f"{self.name} accepted.", ephemeral=True
+            f"Cleared", ephemeral=True
         )
         self.value = True
         self.clear_items()
@@ -443,7 +443,7 @@ class ClearView(discord.ui.View):
     @discord.ui.button(label="Reject", style=discord.ButtonStyle.red)
     async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.send_message(
-            f"{self.name} rejected.", ephemeral=True
+            f"Not cleared.", ephemeral=True
         )
         self.value = False
         self.clear_items()
@@ -509,7 +509,7 @@ class RemoveMissions(discord.ui.View):
         self, button: discord.ui.Button, interaction: discord.Interaction
     ):
         await interaction.response.send_message(
-            f"{self.name} accepted.", ephemeral=True
+            f"Missions removed.", ephemeral=True
         )
         self.value = True
         self.clear_items()
@@ -519,7 +519,7 @@ class RemoveMissions(discord.ui.View):
     @discord.ui.button(label="Reject", style=discord.ButtonStyle.red)
     async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.send_message(
-            f"{self.name} rejected.", ephemeral=True
+            f"Nothing changed.", ephemeral=True
         )
         self.value = False
         self.clear_items()
