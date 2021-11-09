@@ -1017,11 +1017,18 @@ class Tournament2(commands.Cog, name="Tournament2"):
             hc_podium = await self._podium(t.records["hc"])
             bo_podium = await self._podium(t.records["bo"])
 
+            codes = [
+                f"**{t.maps['ta']['code']}** - {t.maps['ta']['level']} by {t.maps['ta']['author']}\n",
+                f"**{t.maps['mc']['code']}** - {t.maps['mc']['level']} by {t.maps['mc']['author']}\n",
+                f"**{t.maps['hc']['code']}** - {t.maps['hc']['level']} by {t.maps['hc']['author']}\n",
+                f"**{t.maps['bo']['code']}** - {t.maps['bo']['level']} by {t.maps['bo']['author']}\n",
+            ]
+
             top_three_desc = (
-                "__Time Attack__\n" + "\n".join(ta_podium) + f"\n\n"
-                "__Mildcore__\n" + "\n".join(mc_podium) + "\n\n"
-                "__Hardcore__\n" + "\n".join(hc_podium) + "\n\n"
-                "__Bonus__\n" + "\n".join(bo_podium)
+                "__Time Attack__\n" + codes[0] + "\n".join(ta_podium) + f"\n\n"
+                "__Mildcore__\n" + codes[1] + "\n".join(mc_podium) + "\n\n"
+                "__Hardcore__\n" + codes[2] + "\n".join(hc_podium) + "\n\n"
+                "__Bonus__\n" + codes[3] + "\n".join(bo_podium)
             )
             top_three = hall_of_fame(
                 f"Weekly Tournament - Top 3 (<t:{t.unix_start}:D>)",
