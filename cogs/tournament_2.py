@@ -224,6 +224,24 @@ class Tournament2(commands.Cog, name="Tournament2"):
             "hc": [],
             "bo": [],
         }
+        tournament.records_gold = {
+            "ta": [],
+            "mc": [],
+            "hc": [],
+            "bo": [],
+        }
+        tournament.records_diamond = {
+            "ta": [],
+            "mc": [],
+            "hc": [],
+            "bo": [],
+        }
+        tournament.records_gm = {
+            "ta": [],
+            "mc": [],
+            "hc": [],
+            "bo": [],
+        }
         tournament.missions = {
             "easy": {
                 "ta": None,
@@ -253,6 +271,9 @@ class Tournament2(commands.Cog, name="Tournament2"):
         }
         await tournament.commit()
         self.cur_tournament = tournament
+
+    async def _rank_splitter(self):
+        pass
 
     async def _lock_all(self):
         await lock_unlock(

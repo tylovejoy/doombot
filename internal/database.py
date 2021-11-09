@@ -39,6 +39,7 @@ class TournamentRecordData(EmbeddedDocument):
     attachment_url = StringField(required=True)
 
 
+
 @instance.register
 class TournamentRecords(EmbeddedDocument):
     """Records."""
@@ -74,6 +75,9 @@ class TournamentData(Document):
 
     maps = EmbeddedField(TournamentMaps)
     records = EmbeddedField(TournamentRecords)
+    records_gold = EmbeddedField(TournamentRecords)
+    records_diamond = EmbeddedField(TournamentRecords)
+    records_gm = EmbeddedField(TournamentRecords)
     missions = DictField()
 
     class Meta:
@@ -174,5 +178,6 @@ class ExperiencePoints(Document):
     """XP Points"""
 
     user_id = IntegerField()
+    rank = StringField()
     xp = IntegerField()
     coins = IntegerField()
