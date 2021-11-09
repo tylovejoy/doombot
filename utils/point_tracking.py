@@ -1,8 +1,9 @@
 class PointTracking:
 
     def __init__(self, records):
+        """Accepts a specific category of records."""
         self.records = records
-        self._top = records[0]["record"]
+        self._top = records[0].record
         self._min = self._top * 1.2
         self._points = {}
 
