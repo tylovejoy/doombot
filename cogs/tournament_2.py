@@ -16,7 +16,17 @@ from internal.database import (
 )
 from utils.pb_utils import time_convert, display_record
 from utils.tournament_utils import lock_unlock, category_sort, Category
-from utils.views import ClearView, Confirm, BracketToggle, MissionCategories, RemoveMissions, ScheduleView, StartEndToggle, TournamentChoicesNoAll, Paginator
+from utils.views import (
+    ClearView,
+    Confirm,
+    BracketToggle,
+    MissionCategories,
+    RemoveMissions,
+    ScheduleView,
+    StartEndToggle,
+    TournamentChoicesNoAll,
+    Paginator,
+)
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
@@ -60,6 +70,7 @@ def viewable_channels():
             constants_bot.EXPORT_SS_CHANNEL_ID,
             constants_bot.MAP_SELECT_CHANNEL_ID,
         ]
+
     return commands.check(predicate)
 
 
@@ -197,7 +208,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 "unix_start": data["unix_start"],
                 "unix_end": data["unix_end"],
                 "bracket": data["bracket"],
-                "bracket_cat": data["bracket_cat"]
+                "bracket_cat": data["bracket_cat"],
             }
         )
         maps = {
@@ -339,7 +350,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 "ta": await self._unlock_ta(),
                 "mc": await self._unlock_mc(),
                 "hc": await self._unlock_hc(),
-                "bo": await self._unlock_bo()
+                "bo": await self._unlock_bo(),
             }
             unlocks[bracket_cat]
             mentions = (
@@ -354,7 +365,9 @@ class Tournament2(commands.Cog, name="Tournament2"):
         )
         if bracket_cat == "ta" or not bracket_cat:
             embed.add_field(
-                name="Time Attack", value=display_maps(tournament.maps["ta"]), inline=False
+                name="Time Attack",
+                value=display_maps(tournament.maps["ta"]),
+                inline=False,
             )
         if bracket_cat == "mc" or not bracket_cat:
             embed.add_field(
@@ -525,14 +538,17 @@ class Tournament2(commands.Cog, name="Tournament2"):
         results["title"] = lines[0]
 
         if lines[1].lower() != "now":
-            results["start_time"], results["unix_start"] = await self._start_time(lines[1], now=False)
+            results["start_time"], results["unix_start"] = await self._start_time(
+                lines[1], now=False
+            )
             start = f"<t:{results['unix_start']}:R> -- <t:{results['unix_start']}:F>"
         else:
             results["start_time"], results["unix_start"] = await self._start_time()
             start = f"Now"
 
-        results["end_time"], results["unix_end"] = await self._end_time(lines[2], results["start_time"])
-
+        results["end_time"], results["unix_end"] = await self._end_time(
+            lines[2], results["start_time"]
+        )
 
         if not results["bracket"]:
             results["ta"] = parse_map(lines[3])
@@ -775,7 +791,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
     @commands.command(
         name="changetime",
         help="Change tournament start or end time. Changing the start time will also change the end time to stay the same length.",
-        brief="Change tournament start or end time."
+        brief="Change tournament start or end time.",
     )
     async def _change_tournament_time(self, ctx):
         # await self._update_tournament()
@@ -812,15 +828,11 @@ class Tournament2(commands.Cog, name="Tournament2"):
             unix_start = str(time.mktime(start_time.timetuple()))[:-2]
         else:
             start_time = datetime.datetime(year=1, month=1, day=1)
-            unix_start = str(
-                time.mktime(datetime.datetime.utcnow().timetuple())
-            )[:-2]
+            unix_start = str(time.mktime(datetime.datetime.utcnow().timetuple()))[:-2]
         return start_time, unix_start
-    
+
     async def _end_time(self, end, start):
-        end_time = dateparser.parse(
-            end, settings={"PREFER_DATES_FROM": "future"}
-        )
+        end_time = dateparser.parse(end, settings={"PREFER_DATES_FROM": "future"})
         if start != datetime.datetime(year=1, month=1, day=1):
             delta = end_time - datetime.datetime.now()
             end_time = start + delta
@@ -830,16 +842,22 @@ class Tournament2(commands.Cog, name="Tournament2"):
     @commands.command(
         name="canceltournament",
         help="Cancel the current active/scheduled tournament. Complete deletetion.",
-        brief="Cancel the current active/scheduled tournament."
+        brief="Cancel the current active/scheduled tournament.",
     )
     async def _cancel_tournament(self, ctx):
         await self._update_tournament()
-        if self.cur_tournament.schedule_end == datetime.datetime(year=1, month=1, day=1):
-            await ctx.send("There is no active or scheduled tournament.", delete_after=15)
+        if self.cur_tournament.schedule_end == datetime.datetime(
+            year=1, month=1, day=1
+        ):
+            await ctx.send(
+                "There is no active or scheduled tournament.", delete_after=15
+            )
             return
 
         view = Confirm("Cancel Tournament Wizard", ctx.author)
-        confirmation_msg = await ctx.send("Do you want to delete this tournament?", view=view)
+        confirmation_msg = await ctx.send(
+            "Do you want to delete this tournament?", view=view
+        )
         await view.wait()
 
         if view.value:
@@ -863,13 +881,12 @@ class Tournament2(commands.Cog, name="Tournament2"):
         self.cur_tournament.records[category] = []
         await self.cur_tournament.commit()
 
-    @commands.command(
-        name="clear",
-        help="Clear one or more record categories."
-    )
+    @commands.command(name="clear", help="Clear one or more record categories.")
     async def _clear(self, ctx):
         await ctx.message.delete()
-        embed = doom_embed(title="Clear Records Wizard", desc="Select which categories to clear.")
+        embed = doom_embed(
+            title="Clear Records Wizard", desc="Select which categories to clear."
+        )
         view = ClearView(ctx.author)
         wizard = await ctx.send(embed=embed, view=view)
         await view.wait()
@@ -890,9 +907,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
             embed.description = "Timed out. Nothing will be changed."
             await wizard.edit(embed=embed)
 
-    @commands.command(
-        name="announce"
-    )
+    @commands.command(name="announce")
     async def _announce(self, ctx):
         await ctx.message.delete()
 
@@ -908,7 +923,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 "**SCHEDULED_TIME** [if applicable]\n"
                 "**ANNOUCEMENT TITLE**\n"
                 "**ANNOUCEMENT CONTENTS**"
-            )
+            ),
         )
         view = ScheduleView(ctx.author)
         wizard = await ctx.send(embed=embed, view=view, delete_after=120)
@@ -926,13 +941,17 @@ class Tournament2(commands.Cog, name="Tournament2"):
             content = "\n".join(annoucement[2:])
             embed = doom_embed(title="Announcement")
             embed.add_field(name=title, value=content, inline=False)
-            embed.add_field(name="Scheduled:", value=f"<t:{unix_schedule}:R> - <t:{unix_schedule}:F>", inline=False)
+            embed.add_field(
+                name="Scheduled:",
+                value=f"<t:{unix_schedule}:R> - <t:{unix_schedule}:F>",
+                inline=False,
+            )
         else:
             title = annoucement[0]
             content = "\n".join(annoucement[1:])
             embed = doom_embed(title="Announcement")
             embed.add_field(name=title, value=content)
-        
+
         view_c = Confirm("Announcement", ctx.author)
         confirmation_msg = await ctx.send("Is this correct?", embed=embed, view=view_c)
         await view_c.wait()
@@ -940,11 +959,13 @@ class Tournament2(commands.Cog, name="Tournament2"):
         if view_c.value:
             if view.schedule:
                 embed.remove_field(-1)
-                document = AnnoucementSchedule(**{
-                    "embed": embed.to_dict(),
-                    "schedule": schedule,
-                    "mentions": mentions,      
-                })
+                document = AnnoucementSchedule(
+                    **{
+                        "embed": embed.to_dict(),
+                        "schedule": schedule,
+                        "mentions": mentions,
+                    }
+                )
                 await document.commit()
                 return
             await self.info_channel.send(f"{mentions}", embed=embed)
@@ -964,7 +985,9 @@ class Tournament2(commands.Cog, name="Tournament2"):
 
     @commands.command(name="halloffame", help="", brief="", aliases=["hof", "fame"])
     async def _hall_of_fame(self, ctx):
-        all_tournaments = await TournamentData.find({}, sort=[("tournament_id", -1)]).to_list(length=None)
+        all_tournaments = await TournamentData.find(
+            {}, sort=[("tournament_id", -1)]
+        ).to_list(length=None)
 
         embeds = []
 
@@ -1023,9 +1046,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
         return podium
 
     @commands.command(
-        name="addmission",
-        aliases=["addmissions"],
-        help="Add missions to a category."
+        name="addmission", aliases=["addmissions"], help="Add missions to a category."
     )
     async def _add_missions(self, ctx):
         if self.cur_tournament is None:
@@ -1033,7 +1054,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
             return
         await self._update_tournament()
         embed = doom_embed(
-            title="Add Missions Wizard", 
+            title="Add Missions Wizard",
             desc=(
                 "Add missions for each tournament category (TA, MC, etc.) for the chosen mission cateogry.\n"
                 "If adding general missions, follow the same format as below.\n"
@@ -1042,7 +1063,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 "**MC MISSION TYPE** - **MC MISSION TARGET**\n"
                 "**HC MISSION TYPE** - **HC MISSION TARGET**\n"
                 "**BO MISSION TYPE** - **BO MISSION TARGET**\n"
-            )
+            ),
         )
         view = MissionCategories(ctx.author)
         await ctx.send(embed=embed, view=view, delete_after=120)
@@ -1056,10 +1077,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
             lines = [line.split(" - ") for line in response.content.split("\n")]
             missions = self.cur_tournament.missions["general"]
             for line in lines:
-                missions[str(line)] = {
-                    "type": line[0],
-                    "target": line[1]
-                }
+                missions[str(line)] = {"type": line[0], "target": line[1]}
             self.cur_tournament.missions["general"] = missions
         else:
             missions = self.cur_tournament.missions
@@ -1084,17 +1102,16 @@ class Tournament2(commands.Cog, name="Tournament2"):
 
         formatted = await _format_missions(view.category, missions)
 
-        embed = doom_embed(
-            title="Missions Preview",
-            desc=formatted
-        )
+        embed = doom_embed(title="Missions Preview", desc=formatted)
 
         view = Confirm("Missions Confirmation", ctx.author)
         confirmation_msg = await ctx.send("Is this correct?", embed=embed, view=view)
         await view.wait()
 
         if view.value:
-            await confirmation_msg.edit(content="Confirmed. Missions added.", delete_after=15, view=view)
+            await confirmation_msg.edit(
+                content="Confirmed. Missions added.", delete_after=15, view=view
+            )
             await self.cur_tournament.commit()
         elif not view.value:
             await confirmation_msg.edit(
@@ -1112,12 +1129,12 @@ class Tournament2(commands.Cog, name="Tournament2"):
     @commands.command(
         name="removemissions",
         aliases=["removemission", "deletemissions", "deletemission"],
-        help="Removes all missions from the selected mission category."
+        help="Removes all missions from the selected mission category.",
     )
     async def _remove_missions(self, ctx):
         await self._update_tournament()
         embed = doom_embed(
-            title="Remove Missions Wizard", 
+            title="Remove Missions Wizard",
             desc="This will remove all missions in the selected mission category.",
         )
         view = RemoveMissions(ctx.author)
@@ -1125,7 +1142,9 @@ class Tournament2(commands.Cog, name="Tournament2"):
         await view.wait()
 
         if view.value:
-            await confirmation_msg.edit(content="Confirmed. Missions removed.", delete_after=15, view=view)
+            await confirmation_msg.edit(
+                content="Confirmed. Missions removed.", delete_after=15, view=view
+            )
             for cat in view.category:
                 self.cur_tournament.missions[cat] = {
                     "ta": None,
@@ -1146,7 +1165,6 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 view=view,
                 delete_after=15,
             )
-        
 
     async def _mission_setup(self):
         pass

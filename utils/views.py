@@ -331,13 +331,13 @@ class BracketToggle(discord.ui.View):
         if self.bracket is False:
             self.bracket = True
             button.label = "Bracket Mode Currently On"
-            button.style=discord.ButtonStyle.success
+            button.style = discord.ButtonStyle.success
             self.add_item(self.dropdown)
             await interaction.response.edit_message(view=self)
         else:
             self.bracket = False
             button.label = "Bracket Mode Currently Off"
-            button.style=discord.ButtonStyle.primary
+            button.style = discord.ButtonStyle.primary
             self.remove_item(self.dropdown)
             self.dropdown.bracket_cat = None
             await interaction.response.edit_message(view=self)
@@ -352,7 +352,12 @@ class CategoryDropdown(discord.ui.Select):
             discord.SelectOption(label="Hardcore", value="hc"),
             discord.SelectOption(label="Bonus", value="bo"),
         ]
-        super().__init__(placeholder="Choose a category...", min_values=1, max_values=max_values, options=options)
+        super().__init__(
+            placeholder="Choose a category...",
+            min_values=1,
+            max_values=max_values,
+            options=options,
+        )
 
     async def callback(self, interaction: discord.Interaction):
         if len(self.values) == 1:
@@ -384,10 +389,12 @@ class MissionCategories(discord.ui.View):
         min_values=1,
         max_values=1,
     )
-    async def callback(self, select: discord.ui.Select, interaction: discord.Interaction):
+    async def callback(
+        self, select: discord.ui.Select, interaction: discord.Interaction
+    ):
 
         self.category = select.values[0]
-        
+
 
 class StartEndToggle(discord.ui.View):
     def __init__(self, author):
@@ -407,13 +414,14 @@ class StartEndToggle(discord.ui.View):
         if self.end is False:
             self.end = True
             button.label = "Currently Editing End Time"
-            button.style=discord.ButtonStyle.success
+            button.style = discord.ButtonStyle.success
             await interaction.response.edit_message(view=self)
         else:
             self.end = False
             button.label = "Currently Editing Start Time"
-            button.style=discord.ButtonStyle.primary
+            button.style = discord.ButtonStyle.primary
             await interaction.response.edit_message(view=self)
+
 
 class ClearView(discord.ui.View):
     def __init__(self, author):
@@ -432,9 +440,7 @@ class ClearView(discord.ui.View):
     async def confirm(
         self, button: discord.ui.Button, interaction: discord.Interaction
     ):
-        await interaction.response.send_message(
-            f"Cleared", ephemeral=True
-        )
+        await interaction.response.send_message(f"Cleared", ephemeral=True)
         self.value = True
         self.clear_items()
         self.stop()
@@ -442,12 +448,11 @@ class ClearView(discord.ui.View):
     # This one is similar to the confirmation button except sets the inner value to `False`
     @discord.ui.button(label="Reject", style=discord.ButtonStyle.red)
     async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.send_message(
-            f"Not cleared.", ephemeral=True
-        )
+        await interaction.response.send_message(f"Not cleared.", ephemeral=True)
         self.value = False
         self.clear_items()
         self.stop()
+
 
 class ScheduleView(discord.ui.View):
     def __init__(self, author):
@@ -460,7 +465,7 @@ class ScheduleView(discord.ui.View):
         if interaction.user == self.author:
             return True
         return False
-    
+
     @discord.ui.button(
         label="Scheduled Annoucement Off", style=discord.ButtonStyle.primary
     )
@@ -468,12 +473,12 @@ class ScheduleView(discord.ui.View):
         if self.schedule is False:
             self.schedule = True
             button.label = "Scheduled Annoucement On"
-            button.style=discord.ButtonStyle.success
+            button.style = discord.ButtonStyle.success
             await interaction.response.edit_message(view=self)
         else:
             self.schedule = False
             button.label = "Scheduled Annoucement Off"
-            button.style=discord.ButtonStyle.primary
+            button.style = discord.ButtonStyle.primary
             await interaction.response.edit_message(view=self)
 
     @discord.ui.select(
@@ -489,8 +494,11 @@ class ScheduleView(discord.ui.View):
         min_values=1,
         max_values=6,
     )
-    async def callback(self, select: discord.ui.Select, interaction: discord.Interaction):
+    async def callback(
+        self, select: discord.ui.Select, interaction: discord.Interaction
+    ):
         self.mentions = select.values
+
 
 class RemoveMissions(discord.ui.View):
     def __init__(self, author):
@@ -508,9 +516,7 @@ class RemoveMissions(discord.ui.View):
     async def confirm(
         self, button: discord.ui.Button, interaction: discord.Interaction
     ):
-        await interaction.response.send_message(
-            f"Missions removed.", ephemeral=True
-        )
+        await interaction.response.send_message(f"Missions removed.", ephemeral=True)
         self.value = True
         self.clear_items()
         self.stop()
@@ -518,13 +524,11 @@ class RemoveMissions(discord.ui.View):
     # This one is similar to the confirmation button except sets the inner value to `False`
     @discord.ui.button(label="Reject", style=discord.ButtonStyle.red)
     async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.send_message(
-            f"Nothing changed.", ephemeral=True
-        )
+        await interaction.response.send_message(f"Nothing changed.", ephemeral=True)
         self.value = False
         self.clear_items()
         self.stop()
-    
+
     @discord.ui.select(
         options=[
             discord.SelectOption(label="General", value="general"),
@@ -537,5 +541,7 @@ class RemoveMissions(discord.ui.View):
         min_values=1,
         max_values=5,
     )
-    async def callback(self, select: discord.ui.Select, interaction: discord.Interaction):
+    async def callback(
+        self, select: discord.ui.Select, interaction: discord.Interaction
+    ):
         self.category = select.values

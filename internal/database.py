@@ -14,13 +14,15 @@ from umongo.fields import (
 
 from internal.database_init import instance
 
+
 @instance.register
 class AnnoucementSchedule(Document):
     """Annoucement Schedules"""
+
     embed = DictField()
     schedule = DateTimeField()
     mentions = StringField()
-    
+
     class Meta:
         """MongoDb database collection name."""
 
@@ -165,6 +167,7 @@ class SuggestionStars(Document):
     @classmethod
     async def search(cls, _id):
         return await cls.find_one({"message_id": _id})
+
 
 @instance.register
 class ExperiencePoints(Document):
