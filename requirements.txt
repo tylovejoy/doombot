@@ -29,3 +29,4 @@ typing-extensions==3.7.4.3
 tzlocal==2.1
 umongo==3.0.0b10
 yarl==1.5.1
+Pillow

@@ -57,7 +57,6 @@ class CategoryPointTracking:
             self._min["bo"] = self._top["bo"] * 1.2
             self.compute_points_lb("bo")
 
-
         self.compute_points_missions()
 
 

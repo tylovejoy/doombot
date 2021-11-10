@@ -53,6 +53,7 @@ class Bot(commands.Bot):
         #         error = f"{extension}\n {type(e).__name__} : {e}"
         #         logger.info(f"failed to load extension {error}")
         self.load_extension("cogs.tournament_2")
+        self.load_extension("cogs.xp")
         logger.info("Extensions loaded.")
 
     async def on_ready(self):
