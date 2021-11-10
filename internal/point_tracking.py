@@ -1,6 +1,8 @@
 import operator
 from math import ceil
 
+from internal.constants_bot_prod import BONUS_ROLE_ID
+
 class dotdict(dict):
     """dot.notation access to dictionary attributes"""
     __getattr__ = dict.get
@@ -58,6 +60,7 @@ class CategoryPointTracking:
             self.compute_points_lb("bo")
 
         self.compute_points_missions()
+        self.compute_points_general()
 
 
 
@@ -69,8 +72,45 @@ class CategoryPointTracking:
                     continue
                 cache.add(record.posted_by)
                 self._points[record.posted_by] = {}
-                self._points[record.posted_by]["points"] = 0
-                self._points[record.posted_by]["count"] = 0
+                self._points[record.posted_by]["points"] = {
+                    "ta": 0,
+                    "mc": 0,
+                    "hc": 0,
+                    "bo": 0,
+                    "ta_missions": 0,
+                    "mc_missions": 0,
+                    "hc_missions": 0,
+                    "bo_missions": 0,
+                    "general": 0,
+                }
+                
+                self._points[record.posted_by]["count"] = {
+                    "ta": {
+                        "easy": 0,
+                        "medium": 0,
+                        "hard": 0,
+                        "expert": 0,
+                    },
+                    "mc": {
+                        "easy": 0,
+                        "medium": 0,
+                        "hard": 0,
+                        "expert": 0,
+                    },
+                    "hc": {
+                        "easy": 0,
+                        "medium": 0,
+                        "hard": 0,
+                        "expert": 0,
+                    },
+                    "bo": {
+                        "easy": 0,
+                        "medium": 0,
+                        "hard": 0,
+                        "expert": 0,
+                    },
+                    "general": 0,
+                }
 
 
     def compute_points_lb(self, category):
@@ -83,7 +123,7 @@ class CategoryPointTracking:
                     points -= ceil(((record.record - self._top[category]) * (2400 / (self._min[category] - self._top[category]))))
             else:
                 points = 0
-            self._points[record.posted_by]["points"] += points
+            self._points[record.posted_by]["points"][category] += points
 
 
     def compute_points_missions(self):
@@ -92,25 +132,77 @@ class CategoryPointTracking:
                 for m_cat in ["expert", "hard", "medium", "easy"]:
                     mission_type = self.missions[m_cat][t_cat]["type"]
                     mission_target = self.missions[m_cat][t_cat]["target"]
-                    if mission_type == "sub":
-                        if float(record.record) < mission_target:
-                            self._points[record.posted_by]["count"] += 1
-                            mission_points = {
+                    mission_points = {
                                 "expert": 2000,
                                 "hard": 1500,
                                 "medium": 1000,
                                 "easy": 500,
                             }
-                            self._points[record.posted_by]["points"] += mission_points[m_cat]
+                    if mission_type == "sub":
+                        if float(record.record) < mission_target:
+                            self._points[record.posted_by]["count"][t_cat][m_cat] += 1
+                            self._points[record.posted_by]["points"][t_cat + "_missions"] += mission_points[m_cat]
                             break
                     
 
 
     def compute_points_general(self):
-        pass
+        general = self.missions["general"]
+        for key in general:
+            if general[key]["type"] == "xp":
+                target = general[key]["target"]
+                
+                for user_id in self._points:
+                    total = 0
+                    total += self._points[user_id]["points"]["ta"]
+                    total += self._points[user_id]["points"]["mc"]
+                    total += self._points[user_id]["points"]["hc"]
+                    total += self._points[user_id]["points"]["bo"]
+                    if total >= target:
+                        self._points[user_id]["points"]["general"] += 2000
 
-    def send_to_db(self):
-        pass
+
+            elif general[key]["type"] == "top":
+                target = general[key]["target"]
+                ta = self.ta_records[:3]
+                mc = self.mc_records[:3]
+                hc = self.hc_records[:3]
+                bo = self.bo_records[:3]
+                for user_id in self._points:
+                    total = 0
+                    for record in ta:
+                        if user_id == record.posted_by:
+                            total += 1
+                    for record in mc:
+                        if user_id == record.posted_by:
+                            total += 1        
+                    for record in hc:
+                        if user_id == record.posted_by:
+                            total += 1
+                    for record in bo:
+                        if user_id == record.posted_by:
+                            total += 1
+                    if total >= target:
+                        self._points[user_id]["points"]["general"] += 2000
+
+            elif general[key]["type"] == "missions":
+                target = general[key]["target"].split(" ")
+                if len(target) == 1:
+                    target = int(target[0])
+                    target_cat = ["expert", "hard", "medium", "easy"]
+                else:
+                    target = int(target[0])
+                    target_cat = [target[1]]
+
+                    total = 0
+                for user_id in self._points:
+                    for m_cat in target_cat:
+                        total += self._points[user_id]["count"]["ta"][m_cat]
+                        total += self._points[user_id]["count"]["mc"][m_cat]
+                        total += self._points[user_id]["count"]["hc"][m_cat]
+                        total += self._points[user_id]["count"]["bo"][m_cat]
+                    if total >= target:
+                        self._points[user_id]["points"]["general"] += 2000
 
 
 if __name__ == "__main__":

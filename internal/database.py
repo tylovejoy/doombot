@@ -180,6 +180,7 @@ class ExperiencePoints(Document):
 
     user_id = IntegerField()
     rank = DictField()
+    xp_avg = DictField()
     xp = IntegerField()
     coins = IntegerField()
 

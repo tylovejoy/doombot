@@ -4,6 +4,7 @@ import operator
 import time
 import sys
 from logging import getLogger
+from internal.point_tracking import CategoryPointTracking
 from utils.embeds import doom_embed, hall_of_fame
 import dateparser
 import discord
@@ -35,6 +36,9 @@ else:
     from internal import constants_bot_prod as constants_bot
 
 logger = getLogger(__name__)
+
+DIAMOND_CUTOFF = 0
+GM_CUTOFF = 0
 
 
 def parse_map(text):
@@ -298,6 +302,12 @@ class Tournament2(commands.Cog, name="Tournament2"):
                             "hc": "Unranked",
                             "bo": "Unranked",
                         },
+                        "xp_avg": {
+                            "ta": [None, None, None, None, None],
+                            "mc": [None, None, None, None, None],
+                            "hc": [None, None, None, None, None],
+                            "bo": [None, None, None, None, None],
+                        },
                         "xp": 0,
                         "coins": 0,
                     })
@@ -447,11 +457,49 @@ class Tournament2(commands.Cog, name="Tournament2"):
             )
         await self.info_channel.send(mentions, embed=embed)
 
+    async def _xp_to_db(self, ranks: CategoryPointTracking):
+        for user_id in ranks._points:
+            search = await ExperiencePoints().find_one({"user_id": user_id})
+            search.xp += sum(ranks._points[user_id]["points"].values())
+
+            for t_cat in ["ta", "mc", "hc", "bo"]:
+                total_cat_points = ranks._points[user_id]["points"][t_cat] +\
+                    ranks._points[user_id]["points"][t_cat + "_missions"]
+                search.xp_avg[t_cat].pop(0)
+                search.xp_avg[t_cat].append(total_cat_points)
+            await search.commit()
+
+    async def _calculate_new_rank(self):
+        search = await ExperiencePoints.find({}).to_list(length=None)
+        for doc in search:
+            for t_cat in ["ta", "mc", "hc", "bo"]:
+                cleaned_list = [x for x in doc.xp_avg[t_cat] if x is not None]
+                avg = sum(cleaned_list) / len(cleaned_list)
+                if avg < DIAMOND_CUTOFF:
+                    new_rank = "Gold"
+                elif DIAMOND_CUTOFF <= avg < GM_CUTOFF:
+                    new_rank = "Diamond"
+                elif GM_CUTOFF <= avg:
+                    new_rank = "Grandmaster"
+                doc.rank[t_cat] = new_rank
+                await doc.commit()
+
     async def _end_round(self):
         await self._update_tournament()
         await self._lock_all()
         records = self.cur_tournament.records
         await self._rank_splitter()
+
+        # Points
+        ranks = [
+            CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_unranked),
+            CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_gold),
+            CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_diamond),
+            CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_gm),
+        ]
+        await self._xp_to_db()
+        await self._calculate_new_rank()
+
         if not self.cur_tournament.bracket:
             mentions = (
                 f"{self.ta_role.mention}"
@@ -477,7 +525,6 @@ class Tournament2(commands.Cog, name="Tournament2"):
             )
             self._mentions(self.cur_tournament.bracket_cat)
             br = records[self.cur_tournament.bracket_cat]
-            self._rank_splitter([br])
             await self._export_records(br, self.cur_tournament.bracket_cat, "Bracket")
 
         self.cur_tournament.schedule_end = datetime.datetime(year=1, month=1, day=1)

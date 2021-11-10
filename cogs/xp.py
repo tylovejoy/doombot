@@ -210,6 +210,9 @@ class XP(commands.Cog, name="XP"):
             color = (9, 10, 11, 255)
 
         place = 66
+
+        # (x - (x_offset * 4), (y - 200)//2)
+
         d.ellipse((xp_circle_centered, 20, x - xp_circle_r_pad, 20 + xp_circle_dia), fill=color)
         place_font = ImageFont.truetype("data/futura.ttf", 120)
         if len(str(place)) >= 2:
@@ -221,7 +224,7 @@ class XP(commands.Cog, name="XP"):
         ascent, descent = place_font.getmetrics()
         (width, baseline), (offset_x, offset_y) = place_font.font.getsize(str(place))
 
-        place_h_offset = 20 + xp_circle_dia // 2 - (ascent - offset_y)
+        place_h_offset = 20 + (xp_circle_dia // 2) - (ascent - offset_y) // 2
 
 
         d.text((place_offset, place_h_offset), str(place), fill=(255, 255, 255, 255), font=place_font)
