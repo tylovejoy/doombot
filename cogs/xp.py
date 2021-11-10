@@ -57,7 +57,6 @@ class XP(commands.Cog, name="XP"):
         hc_logo = Image.open(logo_fp[search.rank["hc"]])
         bo_logo = Image.open(logo_fp[search.rank["bo"]])
 
-        diamond_y_offset = 0
         ta_gold_x_offset = 0
         mc_gold_x_offset = 0
         hc_gold_x_offset = 0
@@ -121,7 +120,7 @@ class XP(commands.Cog, name="XP"):
         img = Image.new("RGBA", (x, y), color=(0, 0, 0, 0))
 
         d = ImageDraw.Draw(img, "RGBA")
-        d.rounded_rectangle(inner_box, radius=20, fill=(9, 10, 11, 127))
+        d.rounded_rectangle(inner_box, radius=20, fill=(31, 34, 37, 255))
         with io.BytesIO() as avatar_binary:
             await user.avatar.save(fp=avatar_binary)
             avatar = Image.open(avatar_binary)
@@ -178,7 +177,7 @@ class XP(commands.Cog, name="XP"):
         img.paste(hc_logo, (hc_box_x1 + hc_gold_x_offset + hc_ur_x_offset, 60), hc_logo)
         img.paste(bo_logo, (bo_box_x1 + bo_gold_x_offset + bo_ur_x_offset, 60), bo_logo)
 
-
+        # Username/Discriminator
         name_font = ImageFont.truetype("data/futura.ttf", 50)
         disc_font = ImageFont.truetype("data/futura.ttf", 25)
         name = d.text((x_name, 175), user.name[:12], fill=(255, 255, 255), font=name_font)
@@ -186,6 +185,49 @@ class XP(commands.Cog, name="XP"):
 
         d.text((x_disc, 198), f"#{user.discriminator}", fill=(255, 255, 255), font=disc_font)
 
+        # XP
+
+
+        # Highest Position
+        xp_circle_r_pad = 100
+        xp_circle_dia = 160
+        xp_circle_centered = bo_box_x2 + (x - bo_box_x2) // 2 - xp_circle_dia // 2
+
+        color = ()
+        place = 0
+        all_users = await ExperiencePoints().find({}, sort=[("xp", -1)]).to_list(None)
+        for i, u in enumerate(all_users):
+            if u.user_id == user.id:
+                place = i + 1
+
+        if place == 1:
+            color = (255, 215, 0, 200)
+        elif place == 2:
+            color = (192, 192, 192, 255)
+        elif place == 3:
+            color = (160, 82, 45, 255)
+        else:
+            color = (9, 10, 11, 255)
+
+        place = 66
+        d.ellipse((xp_circle_centered, 20, x - xp_circle_r_pad, 20 + xp_circle_dia), fill=color)
+        place_font = ImageFont.truetype("data/futura.ttf", 120)
+        if len(str(place)) >= 2:
+            place_font = ImageFont.truetype("data/futura.ttf", 90)
+
+        place_length = d.textlength(str(place), font=place_font)
+        place_offset = xp_circle_centered + xp_circle_dia // 2 - place_length // 2
+
+        ascent, descent = place_font.getmetrics()
+        (width, baseline), (offset_x, offset_y) = place_font.font.getsize(str(place))
+
+        place_h_offset = 20 + xp_circle_dia // 2 - (ascent - offset_y)
+
+
+        d.text((place_offset, place_h_offset), str(place), fill=(255, 255, 255, 255), font=place_font)
+
+
+        # Send image in Discord.
         with io.BytesIO() as image_binary:
             img.save(image_binary, 'PNG')
             image_binary.seek(0)
