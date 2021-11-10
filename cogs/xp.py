@@ -5,7 +5,7 @@ import discord
 from PIL import Image, ImageDraw, ImageFont
 import io
 from discord.ext import commands
-
+from utils.embeds import doom_embed
 from internal.database import ExperiencePoints
 
 if len(sys.argv) > 1:
@@ -235,6 +235,15 @@ class XP(commands.Cog, name="XP"):
             img.save(image_binary, 'PNG')
             image_binary.seek(0)
             await ctx.send(file=discord.File(fp=image_binary, filename="rank_card.png"))
+
+    @commands.command(
+        name="shop",
+    )
+    async def _shop(self, ctx):
+        embed = doom_embed(
+            title="The DoomBot Store", 
+            desc="Select a category in the dropdown to browse!",
+        )
 
 
 def setup(bot):
