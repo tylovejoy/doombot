@@ -78,6 +78,7 @@ class TournamentData(Document):
     records_gold = EmbeddedField(TournamentRecords)
     records_diamond = EmbeddedField(TournamentRecords)
     records_gm = EmbeddedField(TournamentRecords)
+    records_unranked = EmbeddedField(TournamentRecords)
     missions = DictField()
 
     class Meta:
@@ -178,6 +179,11 @@ class ExperiencePoints(Document):
     """XP Points"""
 
     user_id = IntegerField()
-    rank = StringField()
+    rank = DictField()
     xp = IntegerField()
     coins = IntegerField()
+
+    class Meta:
+        """MongoDb database collection name."""
+
+        collection_name = "ExperiencePoints"

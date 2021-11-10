@@ -12,7 +12,7 @@ from internal.database import (
     AnnoucementSchedule,
     TournamentRecordData,
     TournamentData,
-    TournamentRecords,
+    TournamentRecords, ExperiencePoints,
 )
 from utils.pb_utils import time_convert, display_record
 from utils.tournament_utils import lock_unlock, category_sort, Category
@@ -242,6 +242,12 @@ class Tournament2(commands.Cog, name="Tournament2"):
             "hc": [],
             "bo": [],
         }
+        tournament.records_unranked = {
+            "ta": [],
+            "mc": [],
+            "hc": [],
+            "bo": [],
+        }
         tournament.missions = {
             "easy": {
                 "ta": None,
@@ -273,7 +279,44 @@ class Tournament2(commands.Cog, name="Tournament2"):
         self.cur_tournament = tournament
 
     async def _rank_splitter(self):
-        pass
+        cat_keys = ["ta", "mc", "hc", "bo"]
+
+        gold = self.cur_tournament.records_gold
+        diamond = self.cur_tournament.records_diamond
+        gm = self.cur_tournament.records_gm
+        unranked = self.cur_tournament.records_unranked
+
+        for key in cat_keys:
+            for record in self.cur_tournament.records[key]:
+                search = await ExperiencePoints().find_one({"user_id": record.posted_by})
+                if not search:
+                    search = ExperiencePoints(**{
+                        "user_id": record.posted_by,
+                        "rank": {
+                            "ta": "Unranked",
+                            "mc": "Unranked",
+                            "hc": "Unranked",
+                            "bo": "Unranked",
+                        },
+                        "xp": 0,
+                        "coins": 0,
+                    })
+                    await search.commit()
+                splitter = {
+                    "Gold": gold[key],
+                    "Diamond": diamond[key],
+                    "Grandmaster": gm[key],
+                    "Unranked": unranked[key],
+                }
+                splitter[search.rank].append(record)
+            gold[key] = sorted(gold[key], key=operator.itemgetter("record"))
+
+        self.cur_tournament.records_gold = gold
+        self.cur_tournament.records_diamond = diamond
+        self.cur_tournament.records_gm = gm
+        self.cur_tournament.records_unranked = unranked
+        await self.cur_tournament.commit()
+
 
     async def _lock_all(self):
         await lock_unlock(
@@ -408,6 +451,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
         await self._update_tournament()
         await self._lock_all()
         records = self.cur_tournament.records
+        await self._rank_splitter()
         if not self.cur_tournament.bracket:
             mentions = (
                 f"{self.ta_role.mention}"
@@ -416,6 +460,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 f"{self.bonus_role.mention}"
                 f"{self.trifecta_role.mention}"
             )
+
             ta = records["ta"]
             mc = records["mc"]
             hc = records["hc"]
@@ -432,6 +477,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
             )
             self._mentions(self.cur_tournament.bracket_cat)
             br = records[self.cur_tournament.bracket_cat]
+            self._rank_splitter([br])
             await self._export_records(br, self.cur_tournament.bracket_cat, "Bracket")
 
         self.cur_tournament.schedule_end = datetime.datetime(year=1, month=1, day=1)

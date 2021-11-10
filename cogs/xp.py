@@ -6,6 +6,8 @@ from PIL import Image, ImageDraw, ImageFont
 import io
 from discord.ext import commands
 
+from internal.database import ExperiencePoints
+
 if len(sys.argv) > 1:
     if sys.argv[1] == "test":
         from internal import constants_bot_test as constants_bot
@@ -37,9 +39,31 @@ class XP(commands.Cog, name="XP"):
         name="rank",
     )
     async def _create_rank_card(self, ctx, user: discord.Member = None):
+        await ctx.message.delete()
         if user is None:
             user = ctx.author
 
+        search = await ExperiencePoints().find_one({"user_id": user.id})
+
+        logo_fp = {
+            "Unranked": "data/unranked_rank.png",
+            "Gold": "data/gold_rank.png",
+            "Diamond": "data/diamond_rank.png",
+            "Grandmaster": "data/grandmaster_rank.png"
+        }
+
+        logo = Image.open(logo_fp[search.rank])
+        rank_logo_offset = 0
+        if search.rank == "Unranked":
+            logo.thumbnail((105, 105))
+            rank_logo_offset = 8
+        elif search.rank == "Gold":
+            logo.thumbnail((100, 100))
+            rank_logo_offset = 11
+        elif search.rank == "Diamond":
+            logo.thumbnail((130, 130))
+        elif search.rank == "Grandmaster":
+            logo.thumbnail((140, 140))
 
         x = 934
         y = 282
@@ -64,10 +88,13 @@ class XP(commands.Cog, name="XP"):
             img.paste(avatar, (x_offset * 4, (y - a_height)//2), av_mask)
         x_name = 200 + x_offset * 7
 
+        img.paste(logo, (x_name + x_offset * 3 + rank_logo_offset, 50), logo)
+
         name_font = ImageFont.truetype("data/futura.ttf", 50)
         disc_font = ImageFont.truetype("data/futura.ttf", 25)
-        name = d.text((x_name, 175), user.name, fill=(255, 255, 255), font=name_font)
-        x_disc = x_name + d.textlength(user.name, font=name_font) + x_offset
+
+        name = d.text((x_name, 175), user.name[:12], fill=(255, 255, 255), font=name_font)
+        x_disc = x_name + d.textlength(user.name[:12], font=name_font) + x_offset
 
         d.text((x_disc, 198), f"#{user.discriminator}", fill=(255, 255, 255), font=disc_font)
 
