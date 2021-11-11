@@ -326,11 +326,11 @@ class Tournament2(commands.Cog, name="Tournament2"):
             diamond[key] = sorted(diamond[key], key=operator.itemgetter("record"))
             gm[key] = sorted(gm[key], key=operator.itemgetter("record"))
 
-        self.cur_tournament.records_gold = gold
-        self.cur_tournament.records_diamond = diamond
-        self.cur_tournament.records_gm = gm
-        self.cur_tournament.records_unranked = unranked
-        await self.cur_tournament.commit()
+            self.cur_tournament.records_gold = gold
+            self.cur_tournament.records_diamond = diamond
+            self.cur_tournament.records_gm = gm
+            self.cur_tournament.records_unranked = unranked
+            await self.cur_tournament.commit()
 
 
     async def _lock_all(self):
