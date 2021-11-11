@@ -179,6 +179,7 @@ class ExperiencePoints(Document):
     """XP Points"""
 
     user_id = IntegerField()
+    alias = StringField()
     rank = DictField()
     xp_avg = DictField()
     xp = IntegerField()
