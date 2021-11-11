@@ -93,10 +93,19 @@ async def _format_missions(category, missions):
     }
 
     for key in missions[category]:
-        if missions[category][key]['type'] == "sub":
-            formatted += f"**{t_cat[key]}:** Get {missions[category][key]['type']} {missions[category][key]['target']} seconds.\n"
-        elif missions[category][key]['type'] == "complete":
-            formatted += f"**{t_cat[key]}:** Complete the level.\n"
+        if category == "general":
+            if missions[category][key]['type'] == "threshold":
+                formatted += f"**{t_cat[key]}:** Get {missions[category][key]['target']} XP (excluding missions)\n"
+            elif missions[category][key]['type'] == "mission":
+                formatted += f"**{t_cat[key]}:** Complete {missions[category][key]['target'][0]} {missions[category][key]['target'][1]} missions\n"
+            elif missions[category][key]['type'] == "top":
+                formatted += f"**{t_cat[key]}:** Get Top 3 in {missions[category][key]['target']} categories.\n"
+        else:
+
+            if missions[category][key]['type'] == "sub":
+                formatted += f"**{t_cat[key]}:** Get {missions[category][key]['type']} {missions[category][key]['target']} seconds.\n"
+            elif missions[category][key]['type'] == "complete":
+                formatted += f"**{t_cat[key]}:** Complete the level.\n"
 
     return formatted
 
