@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import operator
+from os import name
 import time
 import sys
 from logging import getLogger
@@ -91,9 +92,11 @@ async def _format_missions(category, missions):
         "sub": "sub",
     }
 
-    for key in missions[category].keys():
-
-        formatted += f"**{t_cat[key]}:** Get {missions[category][key]['type']} {missions[category][key]['target']} seconds.\n"
+    for key in missions[category]:
+        if missions[category][key]['type'] == "sub":
+            formatted += f"**{t_cat[key]}:** Get {missions[category][key]['type']} {missions[category][key]['target']} seconds.\n"
+        elif missions[category][key]['type'] == "complete":
+            formatted += f"**{t_cat[key]}:** Complete the level.\n"
 
     return formatted
 
@@ -1183,14 +1186,32 @@ class Tournament2(commands.Cog, name="Tournament2"):
         embed = doom_embed(
             title="Add Missions Wizard",
             desc=(
-                "Add missions for each tournament category (TA, MC, etc.) for the chosen mission cateogry.\n"
-                "If adding general missions, follow the same format as below.\n"
+                "Add missions for each tournament category (TA, MC, etc.) for the chosen mission cateogry.\n"              
+            ),
+        )
+        embed.add_field(
+            name="General Missions", 
+            value=(
+                "Only one general mission is allowed."
+                "Accepted general mission types: __threshold, missions, top__\n"
+                "These are short for __XP Threshold, Complete X missions in Y category, and Get top 3 in X categories.__\n"
+                "Example: `threshold - 4000` | `missions - 3 hard` | `top - 3`\n\n"
+                "_Use this format as shown:_\n"
+                "**GENERAL MISSION TYPE** - **GENERAL MISSION TARGET**\n"
+            ),
+        )
+        embed.add_field(
+            name="Category Missions",
+            value=(
+                "Accepted mission types: __sub, complete__\n"
+                "Example: `sub - 15` | `complete`\n"
+                "_Sub X_ targets _must_ be in seconds\n\n"
                 "_Use this format as shown:_\n"
                 "**TA MISSION TYPE** - **TA MISSION TARGET**\n"
                 "**MC MISSION TYPE** - **MC MISSION TARGET**\n"
                 "**HC MISSION TYPE** - **HC MISSION TARGET**\n"
                 "**BO MISSION TYPE** - **BO MISSION TARGET**\n"
-            ),
+            )
         )
         view = MissionCategories(ctx.author)
         await ctx.send(embed=embed, view=view, delete_after=120)
@@ -1201,10 +1222,10 @@ class Tournament2(commands.Cog, name="Tournament2"):
         response = await self.bot.wait_for("message", check=check, timeout=120)
 
         if view.category == "general":
-            lines = [line.split(" - ") for line in response.content.split("\n")]
+            line = response.content.split(" - ")
             missions = self.cur_tournament.missions["general"]
-            for line in lines:
-                missions[str(line)] = {"type": line[0], "target": line[1]}
+
+            missions["general"] = {"type": line[0], "target": line[1]}
             self.cur_tournament.missions["general"] = missions
         else:
             missions = self.cur_tournament.missions
