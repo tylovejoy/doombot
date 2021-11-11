@@ -17,6 +17,12 @@ else:
 logger = getLogger(__name__)
 
 
+def format_xp(xp):
+    if xp > 999:
+        xp = str(float(xp)/1000)[:-2] + "k"
+    return str(xp)
+
+
 class XP(commands.Cog, name="XP"):
     """XP"""
 
@@ -133,7 +139,7 @@ class XP(commands.Cog, name="XP"):
         x_name = 200 + x_offset * 7
 
         # Rank boxes
-        box_start = x_name + x_offset
+        box_start = x_name + x_offset + 30
         box_pad = 15
         box_size = 120
 
@@ -179,14 +185,24 @@ class XP(commands.Cog, name="XP"):
 
         # Username/Discriminator
         name_font = ImageFont.truetype("data/futura.ttf", 50)
+        name_y_offset = 0
+        if len(user.name) > 7:
+            name_font = ImageFont.truetype("data/futura.ttf", 40)
+            name_y_offset = 7
+
         disc_font = ImageFont.truetype("data/futura.ttf", 25)
-        name = d.text((x_name, 175), user.name[:12], fill=(255, 255, 255), font=name_font)
+        name = d.text((x_name, 175 + name_y_offset), user.name[:12], fill=(255, 255, 255), font=name_font)
         x_disc = x_name + d.textlength(user.name[:12], font=name_font) + x_offset
 
         d.text((x_disc, 198), f"#{user.discriminator}", fill=(255, 255, 255), font=disc_font)
 
         # XP
-
+        xp_start = 650
+        xp_font = ImageFont.truetype("data/futura.ttf", 30)
+        xp_length = xp_start + d.textlength("Total XP:", font=xp_font) + 10
+        xp_title = d.text((xp_start, 195), "Total XP:", fill=(255, 255, 255), font=xp_font)
+        xp = format_xp(search.xp)
+        xp_amt = d.text((xp_length, 195), xp, fill=(255, 255, 255), font=xp_font)
 
         # Highest Position
         xp_circle_r_pad = 100
@@ -199,7 +215,7 @@ class XP(commands.Cog, name="XP"):
         for i, u in enumerate(all_users):
             if u.user_id == user.id:
                 place = i + 1
-
+        place = 4
         if place == 1:
             color = (255, 215, 0, 200)
         elif place == 2:
@@ -209,26 +225,32 @@ class XP(commands.Cog, name="XP"):
         else:
             color = (9, 10, 11, 255)
 
-        place = 66
+        place_circle_x1 = x - (x_offset * 4) - 200
+        place_circle_x2 = x - (x_offset * 4)
+        place_circle_y1 = (y - 200) // 2
+        place_circle_y2 = (y - 200) // 2 + 200
 
-        # (x - (x_offset * 4), (y - 200)//2)
-
-        d.ellipse((xp_circle_centered, 20, x - xp_circle_r_pad, 20 + xp_circle_dia), fill=color)
+        d.ellipse((x - (x_offset * 4) - 200, (y - 200) // 2, x - (x_offset * 4), (y - 200) // 2 + 200), fill=color)
         place_font = ImageFont.truetype("data/futura.ttf", 120)
         if len(str(place)) >= 2:
             place_font = ImageFont.truetype("data/futura.ttf", 90)
 
         place_length = d.textlength(str(place), font=place_font)
-        place_offset = xp_circle_centered + xp_circle_dia // 2 - place_length // 2
+        place_offset = place_circle_x1 + (place_circle_x2 - place_circle_x1) // 2 - place_length // 2
 
         ascent, descent = place_font.getmetrics()
         (width, baseline), (offset_x, offset_y) = place_font.font.getsize(str(place))
 
-        place_h_offset = 20 + (xp_circle_dia // 2) - (ascent - offset_y) // 2
+        place_h_offset = place_circle_y1 + (place_circle_y2 - place_circle_y1) // 2 - (ascent - offset_y)
 
+        number_offset = 0
+        if len(str(place)) == 2:
+            number_offset = 3
+        elif len(str(place)) == 3:
+            number_offset = 5
 
-        d.text((place_offset, place_h_offset), str(place), fill=(255, 255, 255, 255), font=place_font)
-
+        d.text((place_offset - number_offset, place_h_offset + 13), str(place), fill=(255, 255, 255, 255),
+               font=place_font)
 
         # Send image in Discord.
         with io.BytesIO() as image_binary:

@@ -85,6 +85,7 @@ async def _format_missions(category, missions):
         "mc": "Mildcore",
         "hc": "Hardcore",
         "bo": "Bonus",
+        "general": "General",
     }
     m_cat = {
         "sub": "sub",
@@ -312,13 +313,14 @@ class Tournament2(commands.Cog, name="Tournament2"):
                         "coins": 0,
                     })
                     await search.commit()
+
                 splitter = {
                     "Gold": gold[key],
                     "Diamond": diamond[key],
                     "Grandmaster": gm[key],
                     "Unranked": unranked[key],
                 }
-                splitter[search.rank].append(record)
+                splitter[search.rank[key]] = splitter[search.rank[key]] + [record]
             gold[key] = sorted(gold[key], key=operator.itemgetter("record"))
 
         self.cur_tournament.records_gold = gold
@@ -497,8 +499,9 @@ class Tournament2(commands.Cog, name="Tournament2"):
             CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_diamond),
             CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_gm),
         ]
-        await self._xp_to_db()
-        await self._calculate_new_rank()
+        for rank in ranks:
+            await self._xp_to_db(rank)
+            #await self._calculate_new_rank()
 
         if not self.cur_tournament.bracket:
             mentions = (

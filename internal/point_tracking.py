@@ -1,6 +1,7 @@
+import logging
 import operator
 from math import ceil
-
+logger = logging.getLogger(__name__)
 from internal.constants_bot_prod import BONUS_ROLE_ID
 
 class dotdict(dict):
@@ -62,8 +63,6 @@ class CategoryPointTracking:
         self.compute_points_missions()
         self.compute_points_general()
 
-
-
     def _setup_points(self):
         cache = set()
         for category in self.records.keys():
@@ -112,7 +111,6 @@ class CategoryPointTracking:
                     "general": 0,
                 }
 
-
     def compute_points_lb(self, category):
         for record in self.records[category]:
             if record.record > 0:
@@ -124,7 +122,6 @@ class CategoryPointTracking:
             else:
                 points = 0
             self._points[record.posted_by]["points"][category] += points
-
 
     def compute_points_missions(self):
         for t_cat in self.active_categories:
@@ -143,8 +140,11 @@ class CategoryPointTracking:
                             self._points[record.posted_by]["count"][t_cat][m_cat] += 1
                             self._points[record.posted_by]["points"][t_cat + "_missions"] += mission_points[m_cat]
                             break
-                    
-
+                    elif mission_type == "complete":
+                        if record:
+                            self._points[record.posted_by]["count"][t_cat][m_cat] += 1
+                            self._points[record.posted_by]["points"][t_cat + "_missions"] += mission_points[m_cat]
+                            break
 
     def compute_points_general(self):
         general = self.missions["general"]
@@ -160,7 +160,6 @@ class CategoryPointTracking:
                     total += self._points[user_id]["points"]["bo"]
                     if total >= target:
                         self._points[user_id]["points"]["general"] += 2000
-
 
             elif general[key]["type"] == "top":
                 target = general[key]["target"]
@@ -191,10 +190,10 @@ class CategoryPointTracking:
                     target = int(target[0])
                     target_cat = ["expert", "hard", "medium", "easy"]
                 else:
+                    target_cat = target[1]
                     target = int(target[0])
-                    target_cat = [target[1]]
 
-                    total = 0
+                total = 0
                 for user_id in self._points:
                     for m_cat in target_cat:
                         total += self._points[user_id]["count"]["ta"][m_cat]
@@ -203,48 +202,3 @@ class CategoryPointTracking:
                         total += self._points[user_id]["count"]["bo"][m_cat]
                     if total >= target:
                         self._points[user_id]["points"]["general"] += 2000
-
-
-if __name__ == "__main__":
-    missions = {
-            "easy": {
-                "ta": {"type": "sub", "target": 17},
-                "mc": {"type": "sub", "target": 180},
-                "hc": None,
-                "bo": None,
-            },
-            "medium": {
-                "ta": {"type": "sub", "target": 15},
-                "mc": {"type": "sub", "target": 90},
-                "hc": None,
-                "bo": None,
-            },
-            "hard": {
-                "ta": {"type": "sub", "target": 14},
-                "mc": {"type": "sub", "target": 50},
-                "hc": None,
-                "bo": None,
-            },
-            "expert": {
-                "ta": {"type": "sub", "target": 13.5},
-                "mc": {"type": "sub", "target": 43},
-                "hc": None,
-                "bo": None,
-            },
-            "general": {},
-        }
-    records = {
-        "ta": [
-            dotdict({"posted_by": 1, "record": 13.41}),
-            dotdict({"posted_by": 2, "record": 13.47}),
-            dotdict({"posted_by": 3, "record": 13.98}),
-        ],
-        "mc": [
-            dotdict({"posted_by": 1, "record": 43.01}),
-            dotdict({"posted_by": 2, "record": 48.83}),
-        ],
-        "hc": [],
-        "bo": [],
-    }
-    obj = CategoryPointTracking(missions, records)
-    print(obj._points)
