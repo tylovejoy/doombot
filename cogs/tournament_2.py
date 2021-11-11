@@ -1209,6 +1209,9 @@ class Tournament2(commands.Cog, name="Tournament2"):
         else:
             missions = self.cur_tournament.missions
             lines = [line.split(" - ") for line in response.content.split("\n")]
+            for line in lines:
+                if len(line) == 1:
+                    line[1] = line[0]
             missions[view.category]["ta"] = {
                 "type": lines[0][0],
                 "target": lines[0][1],
