@@ -321,7 +321,10 @@ class Tournament2(commands.Cog, name="Tournament2"):
                     "Unranked": unranked[key],
                 }
                 splitter[search.rank[key]] = splitter[search.rank[key]] + [record]
+            unranked[key] = sorted(unranked[key], key=operator.itemgetter("record"))
             gold[key] = sorted(gold[key], key=operator.itemgetter("record"))
+            diamond[key] = sorted(diamond[key], key=operator.itemgetter("record"))
+            gm[key] = sorted(gm[key], key=operator.itemgetter("record"))
 
         self.cur_tournament.records_gold = gold
         self.cur_tournament.records_diamond = diamond

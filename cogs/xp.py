@@ -267,6 +267,44 @@ class XP(commands.Cog, name="XP"):
             desc="Select a category in the dropdown to browse!",
         )
 
+    @commands.command(
+        name="changerank",
+    )
+    async def _change_rank(self, ctx, user: discord.Member, category, rank):
+        if not user:
+            await ctx.send("User doesn't exist.", delete_after=10)
+        t_cat = ["ta", "mc", "hc", "bo"]
+        if category not in t_cat:
+            await ctx.send(f"Category must be \"{', '.join(t_cat)}\"", delete_after=10)
+        ranks = ["unranked", "gold", "diamond", "grandmaster"]
+        if rank.lower() not in ranks:
+            await ctx.send(f"Rank must be \"{', '.join(ranks)}\"", delete_after=10)
+        
+        search = await ExperiencePoints().find_one({"user_id": user.id})
+
+        if not search:
+            await ctx.send("User hasn't been set up in the database. Creating database entry..", delete_after=10)
+            search = ExperiencePoints(**{
+                "user_id": user.id,
+                "rank": {
+                    "ta": "Unranked",
+                    "mc": "Unranked",
+                    "hc": "Unranked",
+                    "bo": "Unranked",
+                },
+                "xp_avg": {
+                    "ta": [None, None, None, None, None],
+                    "mc": [None, None, None, None, None],
+                    "hc": [None, None, None, None, None],
+                    "bo": [None, None, None, None, None],
+                },
+                "xp": 0,
+                "coins": 0,
+            })
+            await search.commit()
+        
+        search.rank[category] = rank.capitalize()
+        await search.commit()
 
 def setup(bot):
     """Add Cog to Discord bot."""
