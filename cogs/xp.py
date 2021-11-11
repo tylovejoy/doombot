@@ -50,6 +50,8 @@ class XP(commands.Cog, name="XP"):
             user = ctx.author
 
         search = await ExperiencePoints().find_one({"user_id": user.id})
+        if not search:
+            search = self._create_db_entry(ctx.author.id)
 
         logo_fp = {
             "Unranked": "data/unranked_rank.png",
@@ -283,28 +285,45 @@ class XP(commands.Cog, name="XP"):
         search = await ExperiencePoints().find_one({"user_id": user.id})
 
         if not search:
-            await ctx.send("User hasn't been set up in the database. Creating database entry..", delete_after=10)
-            search = ExperiencePoints(**{
-                "user_id": user.id,
-                "rank": {
-                    "ta": "Unranked",
-                    "mc": "Unranked",
-                    "hc": "Unranked",
-                    "bo": "Unranked",
-                },
-                "xp_avg": {
-                    "ta": [None, None, None, None, None],
-                    "mc": [None, None, None, None, None],
-                    "hc": [None, None, None, None, None],
-                    "bo": [None, None, None, None, None],
-                },
-                "xp": 0,
-                "coins": 0,
-            })
-            await search.commit()
+            search = self._create_db_entry(ctx.author.id)
         
         search.rank[category] = rank.capitalize()
         await search.commit()
+
+    @commands.command(
+        name="setname",
+    )
+    async def _set_display_name(self, ctx, name):
+        search = await ExperiencePoints().find_one({"user_id": ctx.author.id})
+        if not search:
+            search = self._create_db_entry(ctx.author.id)
+        
+        search.alias = name
+        await search.commit()
+        await ctx.send(f"Display name has ben set to \"{name}\"", delete_after=10)
+
+
+    async def _create_db_entry(self, user_id):
+        search = ExperiencePoints(**{
+            "user_id": user_id,
+            "rank": {
+                "ta": "Unranked",
+                "mc": "Unranked",
+                "hc": "Unranked",
+                "bo": "Unranked",
+            },
+            "xp_avg": {
+                "ta": [None, None, None, None, None],
+                "mc": [None, None, None, None, None],
+                "hc": [None, None, None, None, None],
+                "bo": [None, None, None, None, None],
+            },
+            "xp": 0,
+            "coins": 0,
+        })
+        await search.commit()
+        return search
+
 
 def setup(bot):
     """Add Cog to Discord bot."""
