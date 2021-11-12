@@ -577,15 +577,9 @@ class Tournament2(commands.Cog, name="Tournament2"):
         records = sorted(records, key=operator.itemgetter("record"))
         embeds = await self._tournament_boards(category)
 
-        if len(embeds) <= 10:
-            await self.export_channel.send(embeds=embeds)
-        elif 10 < len(embeds) <= 20:
+        while embeds:
             await self.export_channel.send(embeds=embeds[:10])
-            await self.export_channel.send(embeds=embeds[10:])
-        else:
-            await self.export_channel.send(embeds=embeds[:10])
-            await self.export_channel.send(embeds=embeds[10:20])
-            await self.export_channel.send(embeds=embeds[20:])
+            embeds = embeds[10:]
 
         cat_rename = {
             "ta": "Time Attack",
@@ -594,11 +588,17 @@ class Tournament2(commands.Cog, name="Tournament2"):
             "bo": "Bonus",
         }
 
+        embeds = []
         for record in records:
             embed = doom_embed(title=record.name, url=record.attachment_url)
             embed.add_field(name=cat_rename[category], value=display_record(record.record))
             embed.set_image(url=record.attachment_url)
-            await self.export_channel.send(embed=embed)
+            embeds.append(embed)
+
+        while embeds:
+            await self.export_channel.send(embeds=embeds[:10])
+            embeds = embeds[10:]
+        
 
     async def _find_records(self, ctx, category):
         await self._update_tournament()
