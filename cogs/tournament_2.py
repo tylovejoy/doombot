@@ -5,7 +5,7 @@ from os import name
 import time
 import sys
 from logging import getLogger
-from internal.point_tracking import CategoryPointTracking
+from internal.point_tracking import CategoryPointTracking, GeneralPointTracking
 from utils.embeds import doom_embed, hall_of_fame
 import dateparser
 import discord
@@ -473,18 +473,18 @@ class Tournament2(commands.Cog, name="Tournament2"):
             )
         await self.info_channel.send(mentions, embed=embed)
 
-    async def _xp_to_db(self, ranks: CategoryPointTracking):
-        logger.info(ranks._points)
-        for user_id in ranks._points:
+    async def _xp_to_db(self, points: GeneralPointTracking):
+        logger.info(points._points)
+        for user_id in points._points:
             search = await ExperiencePoints().find_one({"user_id": user_id})
-            search.xp += sum(ranks._points[user_id]["points"].values())
+            search.xp += sum(points._points[user_id]["points"].values())
 
             for t_cat in ["ta", "mc", "hc", "bo"]:
-                total_cat_points = ranks._points[user_id]["points"][t_cat] +\
-                    ranks._points[user_id]["points"][t_cat + "_missions"]
+                total_cat_points = points._points[user_id]["points"][t_cat] +\
+                    points._points[user_id]["points"][t_cat + "_missions"]
 
                 # search.xp_avg[t_cat] = search.xp_avg[t_cat][1:] + [total_cat_points]
-                await search.commit()
+            await search.commit()
 
     async def _calculate_new_rank(self):
         search = await ExperiencePoints.find({}).to_list(length=None)
@@ -506,17 +506,27 @@ class Tournament2(commands.Cog, name="Tournament2"):
         await self._lock_all()
         records = self.cur_tournament.records
         await self._rank_splitter()
-
+    
         # Points
-        ranks = [
-            CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_unranked),
-            CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_gold),
-            CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_diamond),
-            CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_gm),
-        ]
-        for rank in ranks:
-            await self._xp_to_db(rank)
-            #await self._calculate_new_rank()
+
+        unranked = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_unranked)
+        gold = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_gold)
+        diamond = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_diamond)
+        gm = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_gm)
+
+        combined_points = unranked._points | gold._points | diamond._points | gm._points
+
+        general = GeneralPointTracking(
+            missions=self.cur_tournament.mission,
+            unranked=self.cur_tournament.records_unranked,
+            gold=self.cur_tournament.records_gold,
+            diamond=self.cur_tournament.records_diamond,
+            gm=self.cur_tournament.records_gm,
+            points=combined_points
+        )
+
+        await self._xp_to_db(general)
+        #await self._calculate_new_rank()
 
         if not self.cur_tournament.bracket:
             mentions = (

@@ -11,6 +11,126 @@ class dotdict(dict):
     __delattr__ = dict.__delitem__
 
 
+class GeneralPointTracking:
+
+    def __init__(self, missions, unranked, gold, diamond, gm, points):
+        self.missions = missions
+
+        self.ta_unranked = sorted(unranked["ta"], key=operator.itemgetter("record"))[:3]
+        self.mc_unranked = sorted(unranked["mc"], key=operator.itemgetter("record"))[:3]
+        self.hc_unranked = sorted(unranked["hc"], key=operator.itemgetter("record"))[:3]
+        self.bo_unranked = sorted(unranked["bo"], key=operator.itemgetter("record"))[:3]
+
+        self.ta_gold = sorted(gold["ta"], key=operator.itemgetter("record"))[:3]
+        self.mc_gold = sorted(gold["mc"], key=operator.itemgetter("record"))[:3]
+        self.hc_gold = sorted(gold["hc"], key=operator.itemgetter("record"))[:3]
+        self.bo_gold = sorted(gold["bo"], key=operator.itemgetter("record"))[:3]
+
+        self.ta_diamond = sorted(diamond["ta"], key=operator.itemgetter("record"))[:3]
+        self.mc_diamond = sorted(diamond["mc"], key=operator.itemgetter("record"))[:3]
+        self.hc_diamond = sorted(diamond["hc"], key=operator.itemgetter("record"))[:3]
+        self.bo_diamond = sorted(diamond["bo"], key=operator.itemgetter("record"))[:3]
+
+        self.ta_gm = sorted(gm["ta"], key=operator.itemgetter("record"))[:3]
+        self.mc_gm = sorted(gm["mc"], key=operator.itemgetter("record"))[:3]
+        self.hc_gm = sorted(gm["hc"], key=operator.itemgetter("record"))[:3]
+        self.bo_gm = sorted(gm["bo"], key=operator.itemgetter("record"))[:3]
+
+        self._points = points
+        self.compute_points_general()
+
+    def compute_points_general(self):
+        general = self.missions["general"]
+
+        if general["type"] == "xp":
+            target = general["target"]
+            
+            for user_id in self._points:
+                total = 0
+                total += self._points[user_id]["points"]["ta"]
+                total += self._points[user_id]["points"]["mc"]
+                total += self._points[user_id]["points"]["hc"]
+                total += self._points[user_id]["points"]["bo"]
+                if total >= target:
+                    self._points[user_id]["points"]["general"] += 2000
+
+        elif general["type"] == "top":
+            target = general["target"]
+
+            for user_id in self._points:
+                total = 0
+                # Unranked
+                for record in self.ta_unranked:
+                    if user_id == record.posted_by:
+                        total += 1
+                for record in self.mc_unranked:
+                    if user_id == record.posted_by:
+                        total += 1        
+                for record in self.hc_unranked:
+                    if user_id == record.posted_by:
+                        total += 1
+                for record in self.bo_unranked:
+                    if user_id == record.posted_by:
+                        total += 1
+                # Gold
+                for record in self.ta_gold:
+                    if user_id == record.posted_by:
+                        total += 1
+                for record in self.mc_gold:
+                    if user_id == record.posted_by:
+                        total += 1        
+                for record in self.hc_gold:
+                    if user_id == record.posted_by:
+                        total += 1
+                for record in self.bo_gold:
+                    if user_id == record.posted_by:
+                        total += 1
+                # Diamond
+                for record in self.ta_diamond:
+                    if user_id == record.posted_by:
+                        total += 1
+                for record in self.mc_diamond:
+                    if user_id == record.posted_by:
+                        total += 1        
+                for record in self.hc_diamond:
+                    if user_id == record.posted_by:
+                        total += 1
+                for record in self.bo_diamond:
+                    if user_id == record.posted_by:
+                        total += 1
+                # Grandmaster
+                for record in self.ta_gm:
+                    if user_id == record.posted_by:
+                        total += 1
+                for record in self.mc_gm:
+                    if user_id == record.posted_by:
+                        total += 1        
+                for record in self.hc_gm:
+                    if user_id == record.posted_by:
+                        total += 1
+                for record in self.bo_gm:
+                    if user_id == record.posted_by:
+                        total += 1
+
+                if total >= target:
+                    self._points[user_id]["points"]["general"] += 2000
+
+        elif general["type"] == "missions":
+            target = general["target"].split(" ")
+
+            target_cat = target[1]
+            target = int(target[0])
+
+            total = 0
+            for user_id in self._points:
+                for m_cat in target_cat:
+                    total += self._points[user_id]["count"]["ta"][target_cat]
+                    total += self._points[user_id]["count"]["mc"][target_cat]
+                    total += self._points[user_id]["count"]["hc"][target_cat]
+                    total += self._points[user_id]["count"]["bo"][target_cat]
+                if total >= target:
+                    self._points[user_id]["points"]["general"] += 2000
+
 class CategoryPointTracking:
 
     def __init__(self, missions, records):
@@ -61,7 +181,7 @@ class CategoryPointTracking:
             self.compute_points_lb("bo")
 
         self.compute_points_missions()
-        self.compute_points_general()
+        #self.compute_points_general()
 
     def _setup_points(self):
         cache = set()
@@ -146,57 +266,4 @@ class CategoryPointTracking:
                             self._points[record.posted_by]["points"][t_cat + "_missions"] = mission_points[m_cat]
                             break
 
-    def compute_points_general(self):
-        general = self.missions["general"]
-
-        if general["type"] == "xp":
-            target = general["target"]
-
-            for user_id in self._points:
-                total = 0
-                total += self._points[user_id]["points"]["ta"]
-                total += self._points[user_id]["points"]["mc"]
-                total += self._points[user_id]["points"]["hc"]
-                total += self._points[user_id]["points"]["bo"]
-                if total >= target:
-                    self._points[user_id]["points"]["general"] += 2000
-
-        elif general["type"] == "top":
-            target = general["target"]
-            ta = self.ta_records[:3]
-            mc = self.mc_records[:3]
-            hc = self.hc_records[:3]
-            bo = self.bo_records[:3]
-            for user_id in self._points:
-                total = 0
-                for record in ta:
-                    if user_id == record.posted_by:
-                        total += 1
-                for record in mc:
-                    if user_id == record.posted_by:
-                        total += 1
-                for record in hc:
-                    if user_id == record.posted_by:
-                        total += 1
-                for record in bo:
-                    if user_id == record.posted_by:
-                        total += 1
-                if total >= target:
-                    self._points[user_id]["points"]["general"] += 2000
-
-        elif general["type"] == "missions":
-            target = general["target"].split(" ")
-            logger.info(target)
-            logger.info(target[0])
-            logger.info(target[1])
-            target_cat = target[1]
-            target = int(target[0])
-
-            total = 0
-            for user_id in self._points:
-                total += self._points[user_id]["count"]["ta"][target_cat]
-                total += self._points[user_id]["count"]["mc"][target_cat]
-                total += self._points[user_id]["count"]["hc"][target_cat]
-                total += self._points[user_id]["count"]["bo"][target_cat]
-                if total >= target:
-                    self._points[user_id]["points"]["general"] += 2000
+    
