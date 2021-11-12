@@ -296,6 +296,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
         self.cur_tournament = tournament
 
     async def _rank_splitter(self):
+        await self._update_tournament()
         cat_keys = ["ta", "mc", "hc", "bo"]
 
         gold = self.cur_tournament.records_gold
@@ -306,6 +307,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
         for key in cat_keys:
             for record in self.cur_tournament.records[key]:
                 search = await ExperiencePoints().find_one({"user_id": record.posted_by})
+
                 if not search:
                     search = ExperiencePoints(**{
                         "user_id": record.posted_by,
@@ -326,24 +328,21 @@ class Tournament2(commands.Cog, name="Tournament2"):
                     })
                     await search.commit()
 
-                splitter = {
-                    "Gold": gold[key],
-                    "Diamond": diamond[key],
-                    "Grandmaster": gm[key],
-                    "Unranked": unranked[key],
-                }
-                splitter[search.rank[key]] = splitter[search.rank[key]] + [record]
-            unranked[key] = sorted(unranked[key], key=operator.itemgetter("record"))
-            gold[key] = sorted(gold[key], key=operator.itemgetter("record"))
-            diamond[key] = sorted(diamond[key], key=operator.itemgetter("record"))
-            gm[key] = sorted(gm[key], key=operator.itemgetter("record"))
-
-            self.cur_tournament.records_gold = gold
-            self.cur_tournament.records_diamond = diamond
-            self.cur_tournament.records_gm = gm
-            self.cur_tournament.records_unranked = unranked
-            await self.cur_tournament.commit()
-
+                if search.rank[key] == "Gold":
+                    gold[key] = gold[key] + [record]
+                elif search.rank[key] == "Diamond":
+                    diamond[key] = diamond[key] + [record]
+                elif search.rank[key] == "Grandmaster":
+                    gm[key] = gm[key] + [record]
+                elif search.rank[key] == "Unranked":
+                    unranked[key] = unranked[key] + [record]
+                logger.info(search.rank[key])
+                logger.info(search.alias)
+        self.cur_tournament.records_gold = gold
+        self.cur_tournament.records_diamond = diamond
+        self.cur_tournament.records_gm = gm
+        self.cur_tournament.records_unranked = unranked
+        await self.cur_tournament.commit()
 
     async def _lock_all(self):
         await lock_unlock(
@@ -475,6 +474,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
         await self.info_channel.send(mentions, embed=embed)
 
     async def _xp_to_db(self, ranks: CategoryPointTracking):
+        logger.info(ranks._points)
         for user_id in ranks._points:
             search = await ExperiencePoints().find_one({"user_id": user_id})
             search.xp += sum(ranks._points[user_id]["points"].values())
@@ -482,9 +482,9 @@ class Tournament2(commands.Cog, name="Tournament2"):
             for t_cat in ["ta", "mc", "hc", "bo"]:
                 total_cat_points = ranks._points[user_id]["points"][t_cat] +\
                     ranks._points[user_id]["points"][t_cat + "_missions"]
-                search.xp_avg[t_cat].pop(0)
-                search.xp_avg[t_cat].append(total_cat_points)
-            await search.commit()
+
+                # search.xp_avg[t_cat] = search.xp_avg[t_cat][1:] + [total_cat_points]
+                await search.commit()
 
     async def _calculate_new_rank(self):
         search = await ExperiencePoints.find({}).to_list(length=None)
@@ -563,14 +563,30 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 f"No times exist for the {category_name} category!"
             )
             return
+
         records = sorted(records, key=operator.itemgetter("record"))
         embeds = await self._tournament_boards(category)
-        for e in embeds:
-            await self.export_channel.send(embed=e)
+
+        if len(embeds) <= 10:
+            await self.export_channel.send(embeds=embeds)
+        elif 10 < len(embeds) <= 20:
+            await self.export_channel.send(embeds=embeds[:10])
+            await self.export_channel.send(embeds=embeds[10:])
+        else:
+            await self.export_channel.send(embeds=embeds[:10])
+            await self.export_channel.send(embeds=embeds[10:20])
+            await self.export_channel.send(embeds=embeds[20:])
+
+        cat_rename = {
+            "ta": "Time Attack",
+            "mc": "Mildcore",
+            "hc": "Hardcore",
+            "bo": "Bonus",
+        }
 
         for record in records:
             embed = doom_embed(title=record.name, url=record.attachment_url)
-            embed.add_field(name=category, value=display_record(record.record))
+            embed.add_field(name=cat_rename[category], value=display_record(record.record))
             embed.set_image(url=record.attachment_url)
             await self.export_channel.send(embed=embed)
 
