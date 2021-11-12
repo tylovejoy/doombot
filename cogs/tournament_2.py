@@ -295,7 +295,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
         await tournament.commit()
         self.cur_tournament = tournament
 
-    async def _rank_splitter(self):
+    async def _rank_splitter(self, lb=False):
         await self._update_tournament()
         cat_keys = ["ta", "mc", "hc", "bo"]
 
@@ -336,8 +336,10 @@ class Tournament2(commands.Cog, name="Tournament2"):
                     gm[key] = gm[key] + [record]
                 elif search.rank[key] == "Unranked":
                     unranked[key] = unranked[key] + [record]
-                logger.info(search.rank[key])
-                logger.info(search.alias)
+        
+        if lb:
+            return [unranked, gold, diamond, gm]
+
         self.cur_tournament.records_gold = gold
         self.cur_tournament.records_diamond = diamond
         self.cur_tournament.records_gm = gm
@@ -581,17 +583,10 @@ class Tournament2(commands.Cog, name="Tournament2"):
             await self.export_channel.send(embeds=embeds[:10])
             embeds = embeds[10:]
 
-        cat_rename = {
-            "ta": "Time Attack",
-            "mc": "Mildcore",
-            "hc": "Hardcore",
-            "bo": "Bonus",
-        }
-
         embeds = []
         for record in records:
-            embed = doom_embed(title=record.name, url=record.attachment_url)
-            embed.add_field(name=cat_rename[category], value=display_record(record.record))
+            embed = doom_embed(title=record.name + " Screenshot Link", url=record.attachment_url)
+            embed.add_field(name=record.name, value=display_record(record.record))
             embed.set_image(url=record.attachment_url)
             embeds.append(embed)
 
@@ -612,10 +607,13 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 break
         return records, author_record, pos
 
-    async def _tournament_boards(self, category):
-        records = sorted(
-            self.cur_tournament.records[category], key=operator.itemgetter("record")
-        )
+    async def _tournament_boards(self, category, rank_cat=None):
+        if not rank_cat:
+            records = sorted(
+                self.cur_tournament.records[category], key=operator.itemgetter("record")
+            )
+        else:
+            records = sorted(rank_cat[category], key=operator.itemgetter("record"))
         data_amount = len(records)
 
         embed = doom_embed(title="Records")
@@ -902,6 +900,23 @@ class Tournament2(commands.Cog, name="Tournament2"):
             )
 
     @commands.command(
+        name="rankboard",
+    )
+    async def _rank_view_board(self, ctx, category, rank):
+        await ctx.message.delete()
+        await self._update_tournament()
+        ranks = await self._rank_splitter(lb=True)
+        if rank.lower() == "unranked":
+            await self._view_board(ctx, category.lower(), ranks[0])
+        elif rank.lower() == "gold":
+            await self._view_board(ctx, category.lower(), ranks[1])
+        elif rank.lower() == "diamond":
+            await self._view_board(ctx, category.lower(), ranks[2])
+        elif rank.lower() == "diamond":
+            await self._view_board(ctx, category.lower(), ranks[3])
+
+
+    @commands.command(
         aliases=["times"],
         help="Choose a specific category to view currently submitted times for that category. \nExample: /board ta",
         brief="Leaderboard for Tournament Times",
@@ -925,8 +940,8 @@ class Tournament2(commands.Cog, name="Tournament2"):
 
         await self._view_board(ctx, category.lower())
 
-    async def _view_board(self, ctx, category):
-        embeds = await self._tournament_boards(category)
+    async def _view_board(self, ctx, category, rank=None):
+        embeds = await self._tournament_boards(category, rank)
         if not embeds:
             await ctx.send(
                 f"No times exist for this category!",
