@@ -57,60 +57,30 @@ class GeneralPointTracking:
         elif general["type"] == "top":
             target = general["target"]
 
+            all_cat_ranks = [
+                self.ta_unranked,
+                self.mc_unranked,
+                self.hc_unranked,
+                self.bo_unranked,
+                self.ta_gold,
+                self.mc_gold,
+                self.hc_gold,
+                self.bo_gold,
+                self.ta_diamond,
+                self.mc_diamond,
+                self.hc_diamond,
+                self.bo_diamond,
+                self.ta_gm,
+                self.mc_gm,
+                self.hc_gm,
+                self.bo_gm,
+            ]
             for user_id in self.points:
                 total = 0
-                # Unranked
-                for record in self.ta_unranked:
-                    if user_id == record.posted_by:
-                        total += 1
-                for record in self.mc_unranked:
-                    if user_id == record.posted_by:
-                        total += 1        
-                for record in self.hc_unranked:
-                    if user_id == record.posted_by:
-                        total += 1
-                for record in self.bo_unranked:
-                    if user_id == record.posted_by:
-                        total += 1
-                # Gold
-                for record in self.ta_gold:
-                    if user_id == record.posted_by:
-                        total += 1
-                for record in self.mc_gold:
-                    if user_id == record.posted_by:
-                        total += 1        
-                for record in self.hc_gold:
-                    if user_id == record.posted_by:
-                        total += 1
-                for record in self.bo_gold:
-                    if user_id == record.posted_by:
-                        total += 1
-                # Diamond
-                for record in self.ta_diamond:
-                    if user_id == record.posted_by:
-                        total += 1
-                for record in self.mc_diamond:
-                    if user_id == record.posted_by:
-                        total += 1        
-                for record in self.hc_diamond:
-                    if user_id == record.posted_by:
-                        total += 1
-                for record in self.bo_diamond:
-                    if user_id == record.posted_by:
-                        total += 1
-                # Grandmaster
-                for record in self.ta_gm:
-                    if user_id == record.posted_by:
-                        total += 1
-                for record in self.mc_gm:
-                    if user_id == record.posted_by:
-                        total += 1        
-                for record in self.hc_gm:
-                    if user_id == record.posted_by:
-                        total += 1
-                for record in self.bo_gm:
-                    if user_id == record.posted_by:
-                        total += 1
+                for cat_rank in all_cat_ranks:
+                    for record in cat_rank:
+                        if user_id == record.posted_by:
+                            total += 1
 
                 if total >= target:
                     self.points[user_id]["points"]["general"] += 2000

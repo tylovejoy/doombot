@@ -90,10 +90,10 @@ class XP(commands.Cog, name="XP"):
             "Grandmaster": "data/ranks/grandmaster.png"
         }
 
-        ta_logo = Image.open(logo_fp[search.rank["ta"]])
-        mc_logo = Image.open(logo_fp[search.rank["mc"]])
-        hc_logo = Image.open(logo_fp[search.rank["hc"]])
-        bo_logo = Image.open(logo_fp[search.rank["bo"]])
+        ta_logo = Image.open(logo_fp[search.rank["ta"]]).convert("RGBA")
+        mc_logo = Image.open(logo_fp[search.rank["mc"]]).convert("RGBA")
+        hc_logo = Image.open(logo_fp[search.rank["hc"]]).convert("RGBA")
+        bo_logo = Image.open(logo_fp[search.rank["bo"]]).convert("RGBA")
 
         ta_logo.thumbnail((100, 100))
         mc_logo.thumbnail((100, 100))
@@ -109,12 +109,12 @@ class XP(commands.Cog, name="XP"):
 
         img = Image.new("RGBA", (x, y), color=(0, 0, 0, 0))
         d = ImageDraw.Draw(img, "RGBA")
-        rank_card = Image.open("data/rankcard_bg.png")
+        rank_card = Image.open("data/rankcard_bg.png").convert("RGBA")
         img.paste(rank_card)
 
         with io.BytesIO() as avatar_binary:
             await user.avatar.save(fp=avatar_binary)
-            avatar = Image.open(avatar_binary)
+            avatar = Image.open(avatar_binary).convert("RGBA")
             avatar.thumbnail((200, 200))
             av_mask = Image.new("L", avatar.size, 0)
             draw = ImageDraw.Draw(av_mask)
@@ -125,7 +125,7 @@ class XP(commands.Cog, name="XP"):
         # Portrait PFP
         level = find_level(search.xp)
         portrait_file = find_portrait(level)
-        portrait = Image.open("data/portraits/" + portrait_file)
+        portrait = Image.open("data/portraits/" + portrait_file).convert("RGBA")
         img.paste(portrait, (-60, -30), portrait)
 
 
@@ -196,7 +196,7 @@ class XP(commands.Cog, name="XP"):
         d.text((place_x, place_y), str(place), fill=(255, 255, 255, 255),
                font=place_font)
 
-        pos_portrait = Image.open("data/portraits/" + pos_portrait_f)
+        pos_portrait = Image.open("data/portraits/" + pos_portrait_f).convert("RGBA")
         img.paste(pos_portrait, (x - 350, -28), pos_portrait)
 
         with io.BytesIO() as image_binary:

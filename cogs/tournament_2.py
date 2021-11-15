@@ -96,13 +96,10 @@ async def _format_missions(category, missions):
         "bo": "Bonus",
         "general": "General",
     }
-    m_cat = {
-        "sub": "sub",
-    }
 
     for key in missions[category]:
         if category == "general":
-            if missions[category][key]['type'] == "threshold":
+            if missions[category][key]['type'] == "xp":
                 formatted += f"**{t_cat[key]}:** Get {missions[category][key]['target']} XP (excluding missions)\n"
             elif missions[category][key]['type'] == "mission":
                 formatted += f"**{t_cat[key]}:** Complete {missions[category][key]['target'][0]} {missions[category][key]['target'][1]} missions\n"
@@ -925,6 +922,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
 
     @commands.command(
         name="rankboard",
+        enabled=False,
     )
     async def _rank_view_board(self, ctx, category, rank):
         await ctx.message.delete()
@@ -936,7 +934,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
             await self._view_board(ctx, category.lower(), ranks[1])
         elif rank.lower() == "diamond":
             await self._view_board(ctx, category.lower(), ranks[2])
-        elif rank.lower() == "diamond":
+        elif rank.lower() == "grandmaster":
             await self._view_board(ctx, category.lower(), ranks[3])
 
 
@@ -989,33 +987,34 @@ class Tournament2(commands.Cog, name="Tournament2"):
         name="changetime",
         help="Change tournament start or end time. Changing the start time will also change the end time to stay the same length.",
         brief="Change tournament start or end time.",
+        enabled=False,
     )
     async def _change_tournament_time(self, ctx):
-        # await self._update_tournament()
-        # t = self.cur_tournament
-        # await ctx.message.delete()
-        # def check(message: discord.Message):
-        #     return message.channel == ctx.channel and message.author == ctx.author
+        await self._update_tournament()
+        t = self.cur_tournament
+        await ctx.message.delete()
+        def check(message: discord.Message):
+            return message.channel == ctx.channel and message.author == ctx.author
 
-        # embed = doom_embed(
-        #     title="Change tournament start/end time.",
-        #     desc=(
-        #         "Use the button to toggle start/end time modification.\n"
-        #         "Then respond with what the time should be. (e.g. 10 minutes, 1 week, etc.)\n"
-        #         "If you edit the start time, the end time will automatically be changed to stay the same length as initally set."
-        #     )
-        # )
-        # view = StartEndToggle(ctx.author)
-        # wizard = await ctx.send(embed=embed, view=view, delete_after=30)
-        # response = await self.bot.wait_for("message", check=check, timeout=30)
+        embed = doom_embed(
+            title="Change tournament start/end time.",
+            desc=(
+                "Use the button to toggle start/end time modification.\n"
+                "Then respond with what the time should be. (e.g. 10 minutes, 1 week, etc.)\n"
+                "If you edit the start time, the end time will automatically be changed to stay the same length as initally set."
+            )
+        )
+        view = StartEndToggle(ctx.author)
+        wizard = await ctx.send(embed=embed, view=view, delete_after=30)
+        response = await self.bot.wait_for("message", check=check, timeout=30)
 
-        # if not view.end:
-        #     t.start_time, t.unix_start = await self._start_time(response.content, now=False)
-        #     start = f"<t:{t.unix_start}:R> -- <t:{t.unix_start}:F>"
-        #     t.end_time, t.unix_end = await self._end_time(t.start_time)
-        # else:
-        #     t.end_time, t.unix_end = await self._end_time(), t.start_time)
-        pass
+        if not view.end:
+            t.start_time, t.unix_start = await self._start_time(response.content, now=False)
+            start = f"<t:{t.unix_start}:R> -- <t:{t.unix_start}:F>"
+            t.end_time, t.unix_end = await self._end_time(t.start_time)
+        else:
+            t.end_time, t.unix_end = await self._end_time(), t.start_time)
+        
 
     async def _start_time(self, start=None, now=True):
         if not now:
@@ -1282,9 +1281,9 @@ class Tournament2(commands.Cog, name="Tournament2"):
             name="General Missions", 
             value=(
                 "Only one general mission is allowed."
-                "Accepted general mission types: __threshold, missions, top__\n"
-                "These are short for __XP Threshold, Complete X missions in Y category, and Get top 3 in X categories.__\n"
-                "Example: `threshold - 4000` | `missions - 3 hard` | `top - 3`\n\n"
+                "Accepted general mission types: __xp, missions, top__\n"
+                "These are short for __XP Threshold (excluding mission XP), Complete X missions in Y category, and Get top 3 in X categories.__\n"
+                "Example: `xp - 4000` | `missions - 3 hard` | `top - 3`\n\n"
                 "_Use this format as shown:_\n"
                 "**GENERAL MISSION TYPE** - **GENERAL MISSION TARGET**\n"
             ),
