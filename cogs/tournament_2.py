@@ -658,6 +658,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
 
         return embeds
 
+    @commands.has_role(constants_bot.ORG_ROLE_ID)
     @commands.command()
     async def start(self, ctx):
         if self.cur_tournament:
@@ -983,6 +984,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
             {"tournament_id": self.cur_tournament.tournament_id}
         )
 
+    @commands.has_role(constants_bot.ORG_ROLE_ID)
     @commands.command(
         name="changetime",
         help="Change tournament start or end time. Changing the start time will also change the end time to stay the same length.",
@@ -1035,6 +1037,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
         unix_end = str(time.mktime(end_time.timetuple()))[:-2]
         return end_time, unix_end
 
+    @commands.has_role(constants_bot.ORG_ROLE_ID)
     @commands.command(
         name="canceltournament",
         help="Cancel the current active/scheduled tournament. Complete deletetion.",
@@ -1077,6 +1080,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
         self.cur_tournament.records[category] = []
         await self.cur_tournament.commit()
 
+    @commands.has_role(constants_bot.ORG_ROLE_ID)
     @commands.command(name="clear", help="Clear one or more record categories.")
     async def _clear(self, ctx):
         await ctx.message.delete()
@@ -1103,6 +1107,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
             embed.description = "Timed out. Nothing will be changed."
             await wizard.edit(embed=embed)
 
+    @commands.has_role(constants_bot.ORG_ROLE_ID)
     @commands.command(name="announce")
     async def _announce(self, ctx):
         await ctx.message.delete()
@@ -1263,6 +1268,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 podium.append(f"`{make_ordinal(i + 1)}` {member.mention}")
         return podium
 
+    @commands.has_role(constants_bot.ORG_ROLE_ID)
     @commands.command(
         name="addmission", aliases=["addmissions"], help="Add missions to a category."
     )
@@ -1365,6 +1371,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 delete_after=15,
             )
 
+    @commands.has_role(constants_bot.ORG_ROLE_ID)
     @commands.command(
         name="removemissions",
         aliases=["removemission", "deletemissions", "deletemission"],
@@ -1405,7 +1412,11 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 delete_after=15,
             )
 
-    async def _mission_setup(self):
+    @commands.has_role(constants_bot.ORG_ROLE_ID)
+    @commands.command(
+        name="missions",
+    )
+    async def _post_missions(self):
         pass
 
 

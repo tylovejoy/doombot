@@ -206,6 +206,7 @@ class XP(commands.Cog, name="XP"):
 
     @commands.command(
         name="shop",
+        enabled=False,
     )
     async def _shop(self, ctx):
         embed = doom_embed(
@@ -213,6 +214,7 @@ class XP(commands.Cog, name="XP"):
             desc="Select a category in the dropdown to browse!",
         )
 
+    @commands.has_role(constants_bot.ORG_ROLE_ID)
     @commands.command(
         name="changerank",
     )
