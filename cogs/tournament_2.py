@@ -42,6 +42,14 @@ DIAMOND_CUTOFF = 0
 GM_CUTOFF = 0
 
 
+def merge(combined_, rank):
+    for (k1, k2) in zip(combined_.keys(), rank.keys()):
+        if isinstance(combined_[k1], int):
+            combined_[k1] += rank[k2]
+        else:
+            merge(combined_[k1], rank[k2])
+
+
 def parse_map(text):
     text = text.split(" - ")
     return {"code": text[0], "level": text[1], "author": text[2]}
@@ -476,17 +484,16 @@ class Tournament2(commands.Cog, name="Tournament2"):
         await self.info_channel.send(mentions, embed=embed)
 
     async def _xp_to_db(self, points: GeneralPointTracking):
-        logger.info(points._points)
-        for user_id in points._points:
+        for user_id in points.points:
             search = await ExperiencePoints().find_one({"user_id": user_id})
-            search.xp += sum(points._points[user_id]["points"].values())
+            search.xp += sum(points.points[user_id]["points"].values())
 
             for t_cat in ["ta", "mc", "hc", "bo"]:
-                total_cat_points = points._points[user_id]["points"][t_cat] +\
-                    points._points[user_id]["points"][t_cat + "_missions"]
+                total_cat_points = points.points[user_id]["points"][t_cat] + \
+                                   points.points[user_id]["points"][t_cat + "_missions"]
 
                 # search.xp_avg[t_cat] = search.xp_avg[t_cat][1:] + [total_cat_points]
-            await search.commit()
+                await search.commit()
 
     async def _calculate_new_rank(self):
         search = await ExperiencePoints.find({}).to_list(length=None)
@@ -508,23 +515,40 @@ class Tournament2(commands.Cog, name="Tournament2"):
         await self._lock_all()
         records = self.cur_tournament.records
         await self._rank_splitter()
-    
+
         # Points
+        unranked = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_unranked).points
+        gold = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_gold).points
+        diamond = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_diamond).points
+        gm = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_gm).points
 
-        unranked = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_unranked)
-        gold = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_gold)
-        diamond = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_diamond)
-        gm = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_gm)
+        combined = {**unranked}
 
-        combined_points = unranked._points | gold._points | diamond._points | gm._points
+        for key in gold:
+            if key in combined.keys():
+                merge(combined[key], gold[key])
+            else:
+                combined[key] = gold[key]
+
+        for key in diamond:
+            if key in combined.keys():
+                merge(combined[key], diamond[key])
+            else:
+                combined[key] = diamond[key]
+
+        for key in gm:
+            if key in combined.keys():
+                merge(combined[key], gm[key])
+            else:
+                combined[key] = gm[key]
 
         general = GeneralPointTracking(
-            missions=self.cur_tournament.mission,
+            missions=self.cur_tournament.missions,
             unranked=self.cur_tournament.records_unranked,
             gold=self.cur_tournament.records_gold,
             diamond=self.cur_tournament.records_diamond,
             gm=self.cur_tournament.records_gm,
-            points=combined_points
+            points=combined
         )
 
         await self._xp_to_db(general)
@@ -585,7 +609,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
 
         embeds = []
         for record in records:
-            embed = doom_embed(title=record.name + " Screenshot Link", url=record.attachment_url)
+            embed = doom_embed(title=record.name + " Screenshot Link")
             embed.add_field(name=record.name, value=display_record(record.record))
             embed.set_image(url=record.attachment_url)
             embeds.append(embed)
@@ -1191,21 +1215,35 @@ class Tournament2(commands.Cog, name="Tournament2"):
             bo_podium = await self._podium(t.records["bo"])
 
             codes = [
-                f"**{t.maps['ta']['code']}** - {t.maps['ta']['level']} by {t.maps['ta']['author']}\n",
-                f"**{t.maps['mc']['code']}** - {t.maps['mc']['level']} by {t.maps['mc']['author']}\n",
-                f"**{t.maps['hc']['code']}** - {t.maps['hc']['level']} by {t.maps['hc']['author']}\n",
-                f"**{t.maps['bo']['code']}** - {t.maps['bo']['level']} by {t.maps['bo']['author']}\n",
+                f"{t.maps['ta']['level']} by {t.maps['ta']['author']} (**{t.maps['ta']['code']}**)\n",
+                f"{t.maps['mc']['level']} by {t.maps['mc']['author']} (**{t.maps['mc']['code']}**)\n",
+                f"{t.maps['hc']['level']} by {t.maps['hc']['author']} (**{t.maps['hc']['code']}**)\n",
+                f"{t.maps['bo']['level']} by {t.maps['bo']['author']} (**{t.maps['bo']['code']}**)\n",
             ]
 
-            top_three_desc = (
-                "__Time Attack__\n" + codes[0] + "\n".join(ta_podium) + f"\n\n"
-                "__Mildcore__\n" + codes[1] + "\n".join(mc_podium) + "\n\n"
-                "__Hardcore__\n" + codes[2] + "\n".join(hc_podium) + "\n\n"
-                "__Bonus__\n" + codes[3] + "\n".join(bo_podium)
-            )
             top_three = hall_of_fame(
-                f"Weekly Tournament - Top 3 (<t:{t.unix_start}:D>)",
-                desc=top_three_desc,
+                f"Weekly Tournament - Top 3",
+                desc=f"<t:{t.unix_start}:D>",
+            )
+            top_three.add_field(
+                name="Time Attack",
+                value=codes[0] + "\n".join(ta_podium),
+                inline=False,
+            )
+            top_three.add_field(
+                name="Mildcore",
+                value=codes[1] + "\n".join(mc_podium),
+                inline=False,
+            )
+            top_three.add_field(
+                name="Hardcore",
+                value=codes[2] + "\n".join(hc_podium),
+                inline=False,
+            )
+            top_three.add_field(
+                name="Bonus",
+                value=codes[3] + "\n".join(bo_podium),
+                inline=False,
             )
             embeds.append(top_three)
         view = Paginator([bracket] + embeds, ctx.author)
@@ -1214,15 +1252,16 @@ class Tournament2(commands.Cog, name="Tournament2"):
         await paginator.delete()
 
     async def _podium(self, records):
-        records = sorted(records, key=operator.itemgetter("record"))
+        records_sorted = sorted(records, key=operator.itemgetter("record"))
         podium = []
-        for i, _id in enumerate(records):
+        for i, _id in enumerate(records_sorted):
             if i == 3:
                 break
-            member = self.guild.get_member(int(_id))
+            member = self.guild.get_member(int(_id.posted_by))
             if member is None:
-                continue
-            podium.append(f"`{make_ordinal(i)}` {member.mention}")
+                podium.append(f"`{make_ordinal(i + 1)}` Unknown")
+            else:
+                podium.append(f"`{make_ordinal(i + 1)}` {member.mention}")
         return podium
 
     @commands.command(
