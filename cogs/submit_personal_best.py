@@ -88,6 +88,11 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
         level = level.upper().replace('"', "")
         record_in_seconds = time_convert(record.replace('"', ""))
 
+        # if someone adds the string level to the level arg, remove it :gurdurbd:
+        if level.startswith("LEVEL "):
+            level = level.replace("LEVEL ", "", 1)
+
+
         # Find currently associated levels
         level_checker = {}
         async for entry in (

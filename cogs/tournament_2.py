@@ -1417,7 +1417,15 @@ class Tournament2(commands.Cog, name="Tournament2"):
         name="missions",
     )
     async def _post_missions(self):
-        pass
+        await self._update_tournament()
+        missions = self.cur_tournament.missions
+
+        embed = doom_embed(title="Tournament Missions!")
+        for m_cat in ["general", "easy", "medium", "hard", "expert"]:
+            formatted = _format_missions(m_cat, missions)
+            embed.add_field(name=m_cat.capitalize(), value=formatted)
+
+        
 
 
 def setup(bot):
