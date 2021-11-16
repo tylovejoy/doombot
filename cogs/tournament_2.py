@@ -1431,7 +1431,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
     @commands.command(
         name="missions",
     )
-    async def _post_missions(self):
+    async def _post_missions(self, ctx):
         await self._update_tournament()
         missions = self.cur_tournament.missions
 
@@ -1439,6 +1439,11 @@ class Tournament2(commands.Cog, name="Tournament2"):
         for m_cat in ["general", "easy", "medium", "hard", "expert"]:
             formatted = _format_missions(m_cat, missions)
             embed.add_field(name=m_cat.capitalize(), value=formatted)
+
+        # Make confirmation
+        # MAke mention dropdown
+
+        await self.info_channel.send(embed=embed)
 
 
 def setup(bot):
