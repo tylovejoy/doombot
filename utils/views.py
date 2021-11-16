@@ -545,3 +545,51 @@ class RemoveMissions(discord.ui.View):
         self, select: discord.ui.Select, interaction: discord.Interaction
     ):
         self.category = select.values
+
+
+class MissionAnnounceView(discord.ui.View):
+    def __init__(self, author):
+        super().__init__()
+        self.author = author
+        self.mentions = []
+        self.value = None
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user == self.author:
+            return True
+        return False
+
+    @discord.ui.select(
+        options=[
+            discord.SelectOption(label="Time Attack", value="ta"),
+            discord.SelectOption(label="Mildcore", value="mc"),
+            discord.SelectOption(label="Hardcore", value="hc"),
+            discord.SelectOption(label="Bonus", value="bo"),
+            discord.SelectOption(label="Trifecta", value="tr"),
+            discord.SelectOption(label="Bracket", value="br"),
+        ],
+        placeholder="Choose which roles to be mentioned...",
+        min_values=1,
+        max_values=6,
+    )
+    async def callback(
+        self, select: discord.ui.Select, interaction: discord.Interaction
+    ):
+        self.mentions = select.values
+
+    @discord.ui.button(label="Accept", style=discord.ButtonStyle.green)
+    async def confirm(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
+        await interaction.response.send_message(f"Missions will be announced.", ephemeral=True)
+        self.value = True
+        self.clear_items()
+        self.stop()
+
+    # This one is similar to the confirmation button except sets the inner value to `False`
+    @discord.ui.button(label="Reject", style=discord.ButtonStyle.red)
+    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.send_message(f"Nothing changed.", ephemeral=True)
+        self.value = False
+        self.clear_items()
+        self.stop()

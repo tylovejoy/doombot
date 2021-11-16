@@ -23,6 +23,7 @@ from utils.views import (
     ClearView,
     Confirm,
     BracketToggle,
+    MissionAnnounceView,
     MissionCategories,
     RemoveMissions,
     ScheduleView,
@@ -1430,8 +1431,9 @@ class Tournament2(commands.Cog, name="Tournament2"):
     @commands.has_role(constants_bot.ORG_ROLE_ID)
     @commands.command(
         name="missions",
+        aliases=["announcemissions"],
     )
-    async def _post_missions(self, ctx):
+    async def _announce_missions(self, ctx):
         await self._update_tournament()
         missions = self.cur_tournament.missions
 
@@ -1442,8 +1444,33 @@ class Tournament2(commands.Cog, name="Tournament2"):
 
         # Make confirmation
         # MAke mention dropdown
+        view = MissionAnnounceView(ctx.author)
+        confirmation_msg = await ctx.channel.send(embed=embed, view=view)
+        await view.wait()
+        
+        if view.value:
+            mentions = ""
+            for m in view.mentions:
+                mentions += self._mentions(m)
+            await confirmation_msg.edit(
+                content="Confirmed.",
+                delete_after=15,
+                view=view,
+            )
+            await self.info_channel.send(mentions, embed=embed)
 
-        await self.info_channel.send(embed=embed)
+        elif not view.value:
+            await confirmation_msg.edit(
+                content="Not confirmed.",
+                delete_after=15,
+                view=view,
+            )
+        elif view.value is None:
+            await confirmation_msg.edit(
+                content="Confirmation timed out!",
+                view=view,
+                delete_after=15,
+            )
 
 
 def setup(bot):
