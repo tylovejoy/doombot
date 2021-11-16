@@ -1,18 +1,20 @@
 import logging
 import operator
 from math import ceil
+
 logger = logging.getLogger(__name__)
 from internal.constants_bot_prod import BONUS_ROLE_ID
 
+
 class dotdict(dict):
     """dot.notation access to dictionary attributes"""
+
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
 
 class GeneralPointTracking:
-
     def __init__(self, missions, unranked, gold, diamond, gm, points):
         self.missions = missions
 
@@ -44,7 +46,7 @@ class GeneralPointTracking:
 
         if general["type"] == "xp":
             target = general["target"]
-            
+
             for user_id in self.points:
                 total = 0
                 total += self.points[user_id]["points"]["ta"]
@@ -100,8 +102,8 @@ class GeneralPointTracking:
                 if total >= target:
                     self.points[user_id]["points"]["general"] += 2000
 
-class CategoryPointTracking:
 
+class CategoryPointTracking:
     def __init__(self, missions, records):
         self.missions = missions
 
@@ -116,7 +118,7 @@ class CategoryPointTracking:
             "hc": self.hc_records,
             "bo": self.bo_records,
         }
-        
+
         self._top = {}
         self._min = {}
         self.points = {}
@@ -150,7 +152,7 @@ class CategoryPointTracking:
             self.compute_points_lb("bo")
 
         self.compute_points_missions()
-        #self.compute_points_general()
+        # self.compute_points_general()
 
     def _setup_points(self):
         cache = set()
@@ -171,7 +173,7 @@ class CategoryPointTracking:
                     "bo_missions": 0,
                     "general": 0,
                 }
-                
+
                 self.points[record.posted_by]["count"] = {
                     "ta": {
                         "easy": 0,
@@ -207,7 +209,12 @@ class CategoryPointTracking:
                 if record.record > self._min[category]:
                     points -= 2400
                 else:
-                    points -= ceil(((record.record - self._top[category]) * (2400 / (self._min[category] - self._top[category]))))
+                    points -= ceil(
+                        (
+                            (record.record - self._top[category])
+                            * (2400 / (self._min[category] - self._top[category]))
+                        )
+                    )
             else:
                 points = 0
             self.points[record.posted_by]["points"][category] = points
@@ -219,20 +226,22 @@ class CategoryPointTracking:
                     mission_type = self.missions[m_cat][t_cat]["type"]
                     mission_target = self.missions[m_cat][t_cat]["target"]
                     mission_points = {
-                                "expert": 2000,
-                                "hard": 1500,
-                                "medium": 1000,
-                                "easy": 500,
-                            }
+                        "expert": 2000,
+                        "hard": 1500,
+                        "medium": 1000,
+                        "easy": 500,
+                    }
                     if mission_type == "sub":
                         if float(record.record) < float(mission_target):
                             self.points[record.posted_by]["count"][t_cat][m_cat] += 1
-                            self.points[record.posted_by]["points"][t_cat + "_missions"] = mission_points[m_cat]
+                            self.points[record.posted_by]["points"][
+                                t_cat + "_missions"
+                            ] = mission_points[m_cat]
                             break
                     elif mission_type == "complete":
                         if record:
                             self.points[record.posted_by]["count"][t_cat][m_cat] += 1
-                            self.points[record.posted_by]["points"][t_cat + "_missions"] = mission_points[m_cat]
+                            self.points[record.posted_by]["points"][
+                                t_cat + "_missions"
+                            ] = mission_points[m_cat]
                             break
-
-    

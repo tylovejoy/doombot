@@ -92,7 +92,6 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
         if level.startswith("LEVEL "):
             level = level.replace("LEVEL ", "", 1)
 
-
         # Find currently associated levels
         level_checker = {}
         async for entry in (

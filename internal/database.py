@@ -39,7 +39,6 @@ class TournamentRecordData(EmbeddedDocument):
     attachment_url = StringField(required=True)
 
 
-
 @instance.register
 class TournamentRecords(EmbeddedDocument):
     """Records."""

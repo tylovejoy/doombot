@@ -14,7 +14,8 @@ from internal.database import (
     AnnoucementSchedule,
     TournamentRecordData,
     TournamentData,
-    TournamentRecords, ExperiencePoints,
+    TournamentRecords,
+    ExperiencePoints,
 )
 from utils.pb_utils import time_convert, display_record
 from utils.tournament_utils import lock_unlock, category_sort, Category
@@ -99,17 +100,17 @@ async def _format_missions(category, missions):
 
     for key in missions[category]:
         if category == "general":
-            if missions[category][key]['type'] == "xp":
+            if missions[category][key]["type"] == "xp":
                 formatted += f"**{t_cat[key]}:** Get {missions[category][key]['target']} XP (excluding missions)\n"
-            elif missions[category][key]['type'] == "mission":
+            elif missions[category][key]["type"] == "mission":
                 formatted += f"**{t_cat[key]}:** Complete {missions[category][key]['target'][0]} {missions[category][key]['target'][1]} missions\n"
-            elif missions[category][key]['type'] == "top":
+            elif missions[category][key]["type"] == "top":
                 formatted += f"**{t_cat[key]}:** Get Top 3 in {missions[category][key]['target']} categories.\n"
         else:
 
-            if missions[category][key]['type'] == "sub":
+            if missions[category][key]["type"] == "sub":
                 formatted += f"**{t_cat[key]}:** Get {missions[category][key]['type']} {missions[category][key]['target']} seconds.\n"
-            elif missions[category][key]['type'] == "complete":
+            elif missions[category][key]["type"] == "complete":
                 formatted += f"**{t_cat[key]}:** Complete the level.\n"
 
     return formatted
@@ -311,26 +312,30 @@ class Tournament2(commands.Cog, name="Tournament2"):
 
         for key in cat_keys:
             for record in self.cur_tournament.records[key]:
-                search = await ExperiencePoints().find_one({"user_id": record.posted_by})
+                search = await ExperiencePoints().find_one(
+                    {"user_id": record.posted_by}
+                )
 
                 if not search:
-                    search = ExperiencePoints(**{
-                        "user_id": record.posted_by,
-                        "rank": {
-                            "ta": "Unranked",
-                            "mc": "Unranked",
-                            "hc": "Unranked",
-                            "bo": "Unranked",
-                        },
-                        "xp_avg": {
-                            "ta": [None, None, None, None, None],
-                            "mc": [None, None, None, None, None],
-                            "hc": [None, None, None, None, None],
-                            "bo": [None, None, None, None, None],
-                        },
-                        "xp": 0,
-                        "coins": 0,
-                    })
+                    search = ExperiencePoints(
+                        **{
+                            "user_id": record.posted_by,
+                            "rank": {
+                                "ta": "Unranked",
+                                "mc": "Unranked",
+                                "hc": "Unranked",
+                                "bo": "Unranked",
+                            },
+                            "xp_avg": {
+                                "ta": [None, None, None, None, None],
+                                "mc": [None, None, None, None, None],
+                                "hc": [None, None, None, None, None],
+                                "bo": [None, None, None, None, None],
+                            },
+                            "xp": 0,
+                            "coins": 0,
+                        }
+                    )
                     await search.commit()
 
                 if search.rank[key] == "Gold":
@@ -341,7 +346,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
                     gm[key] = gm[key] + [record]
                 elif search.rank[key] == "Unranked":
                     unranked[key] = unranked[key] + [record]
-        
+
         if lb:
             return [unranked, gold, diamond, gm]
 
@@ -486,8 +491,10 @@ class Tournament2(commands.Cog, name="Tournament2"):
             search.xp += sum(points.points[user_id]["points"].values())
 
             for t_cat in ["ta", "mc", "hc", "bo"]:
-                total_cat_points = points.points[user_id]["points"][t_cat] + \
-                                   points.points[user_id]["points"][t_cat + "_missions"]
+                total_cat_points = (
+                    points.points[user_id]["points"][t_cat]
+                    + points.points[user_id]["points"][t_cat + "_missions"]
+                )
 
                 # search.xp_avg[t_cat] = search.xp_avg[t_cat][1:] + [total_cat_points]
                 await search.commit()
@@ -514,10 +521,18 @@ class Tournament2(commands.Cog, name="Tournament2"):
         await self._rank_splitter()
 
         # Points
-        unranked = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_unranked).points
-        gold = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_gold).points
-        diamond = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_diamond).points
-        gm = CategoryPointTracking(self.cur_tournament.missions, self.cur_tournament.records_gm).points
+        unranked = CategoryPointTracking(
+            self.cur_tournament.missions, self.cur_tournament.records_unranked
+        ).points
+        gold = CategoryPointTracking(
+            self.cur_tournament.missions, self.cur_tournament.records_gold
+        ).points
+        diamond = CategoryPointTracking(
+            self.cur_tournament.missions, self.cur_tournament.records_diamond
+        ).points
+        gm = CategoryPointTracking(
+            self.cur_tournament.missions, self.cur_tournament.records_gm
+        ).points
 
         combined = {**unranked}
 
@@ -545,11 +560,11 @@ class Tournament2(commands.Cog, name="Tournament2"):
             gold=self.cur_tournament.records_gold,
             diamond=self.cur_tournament.records_diamond,
             gm=self.cur_tournament.records_gm,
-            points=combined
+            points=combined,
         )
 
         await self._xp_to_db(general)
-        #await self._calculate_new_rank()
+        # await self._calculate_new_rank()
 
         if not self.cur_tournament.bracket:
             mentions = (
@@ -614,7 +629,6 @@ class Tournament2(commands.Cog, name="Tournament2"):
         while embeds:
             await self.export_channel.send(embeds=embeds[:10])
             embeds = embeds[10:]
-        
 
     async def _find_records(self, ctx, category):
         await self._update_tournament()
@@ -938,7 +952,6 @@ class Tournament2(commands.Cog, name="Tournament2"):
         elif rank.lower() == "grandmaster":
             await self._view_board(ctx, category.lower(), ranks[3])
 
-
     @commands.command(
         aliases=["times"],
         help="Choose a specific category to view currently submitted times for that category. \nExample: /board ta",
@@ -995,6 +1008,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
         await self._update_tournament()
         t = self.cur_tournament
         await ctx.message.delete()
+
         def check(message: discord.Message):
             return message.channel == ctx.channel and message.author == ctx.author
 
@@ -1004,19 +1018,20 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 "Use the button to toggle start/end time modification.\n"
                 "Then respond with what the time should be. (e.g. 10 minutes, 1 week, etc.)\n"
                 "If you edit the start time, the end time will automatically be changed to stay the same length as initally set."
-            )
+            ),
         )
         view = StartEndToggle(ctx.author)
         wizard = await ctx.send(embed=embed, view=view, delete_after=30)
         response = await self.bot.wait_for("message", check=check, timeout=30)
 
         if not view.end:
-            t.start_time, t.unix_start = await self._start_time(response.content, now=False)
+            t.start_time, t.unix_start = await self._start_time(
+                response.content, now=False
+            )
             start = f"<t:{t.unix_start}:R> -- <t:{t.unix_start}:F>"
             t.end_time, t.unix_end = await self._end_time(t.start_time)
-        else:
-            t.end_time, t.unix_end = await self._end_time(), t.start_time)
-        
+        # else:
+        #     t.end_time, t.unix_end = await self._end_time(), t.start_time)
 
     async def _start_time(self, start=None, now=True):
         if not now:
@@ -1280,11 +1295,11 @@ class Tournament2(commands.Cog, name="Tournament2"):
         embed = doom_embed(
             title="Add Missions Wizard",
             desc=(
-                "Add missions for each tournament category (TA, MC, etc.) for the chosen mission cateogry.\n"              
+                "Add missions for each tournament category (TA, MC, etc.) for the chosen mission cateogry.\n"
             ),
         )
         embed.add_field(
-            name="General Missions", 
+            name="General Missions",
             value=(
                 "Only one general mission is allowed."
                 "Accepted general mission types: __xp, missions, top__\n"
@@ -1305,7 +1320,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 "**MC MISSION TYPE** - **MC MISSION TARGET**\n"
                 "**HC MISSION TYPE** - **HC MISSION TARGET**\n"
                 "**BO MISSION TYPE** - **BO MISSION TARGET**\n"
-            )
+            ),
         )
         view = MissionCategories(ctx.author)
         await ctx.send(embed=embed, view=view, delete_after=120)
@@ -1424,8 +1439,6 @@ class Tournament2(commands.Cog, name="Tournament2"):
         for m_cat in ["general", "easy", "medium", "hard", "expert"]:
             formatted = _format_missions(m_cat, missions)
             embed.add_field(name=m_cat.capitalize(), value=formatted)
-
-        
 
 
 def setup(bot):
