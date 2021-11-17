@@ -1460,20 +1460,44 @@ class Tournament2(commands.Cog, name="Tournament2"):
 
         # Make confirmation
         # MAke mention dropdown
-        view = MissionAnnounceView(ctx.author)
+        view = ScheduleView(ctx.author)
         confirmation_msg = await ctx.channel.send(embed=embed, view=view)
         await view.wait()
+
+        def check(message: discord.Message):
+            return message.channel == ctx.channel and message.author == ctx.author
         
         if view.value:
             mentions = ""
             for m in view.mentions:
                 mentions += self._mentions(m)
+            
+            if not view.schedule:
+                await confirmation_msg.edit(
+                    content="Confirmed.",
+                    delete_after=15,
+                    view=view,
+                )
+                await self.info_channel.send(mentions, embed=embed)
+                return
+            
+            response = await self.bot.wait_for("message", check=check, timeout=120)
+            schedule = dateparser.parse(
+                response, settings={"PREFER_DATES_FROM": "future"}
+            )
+            unix_schedule = str(time.mktime(schedule.timetuple()))[:-2]
+            announcement = AnnoucementSchedule(**{
+                "embed": embed.to_dict(),
+                "mentions": mentions,
+                "schedule": schedule,
+            })
+            await announcement.commit()
             await confirmation_msg.edit(
-                content="Confirmed.",
+                content=f"Scheduled for <t:{unix_schedule}:R> - <t:{unix_schedule}:F>",
                 delete_after=15,
                 view=view,
             )
-            await self.info_channel.send(mentions, embed=embed)
+
 
         elif not view.value:
             await confirmation_msg.edit(
