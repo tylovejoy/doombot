@@ -120,12 +120,12 @@ class WorldRecords(Document):
     code = StringField(required=True)
     name = StringField(required=True)
     posted_by = IntegerField(required=True)
-    message_id = IntegerField(required=True)
+    message_id = IntegerField()
     url = StringField(required=True)
     level = StringField(required=True)
     record = FloatField(required=True)
     verified = BooleanField(require=True)
-    hidden_id = IntegerField(required=True)
+    hidden_id = IntegerField()
 
     class Meta:
         """MongoDb database collection name."""

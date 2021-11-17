@@ -16,6 +16,7 @@ from internal.database import (
     TournamentData,
     TournamentRecords,
     ExperiencePoints,
+    WorldRecords,
 )
 from utils.pb_utils import time_convert, display_record
 from utils.tournament_utils import lock_unlock, category_sort, Category
@@ -603,7 +604,22 @@ class Tournament2(commands.Cog, name="Tournament2"):
             name=f"The round has ended!",
             value=f"Stay tuned for the next announcement!",
         )
+        await self._submit_records_to_bot()
         await self.info_channel.send(f"{mentions}", embed=end_announcement)
+
+    async def _submit_records_to_bot(self):
+        for t_cat in ["ta", "mc", "hc", "bo"]:
+            for record in self.cur_tournament.records[t_cat]:
+                new_record = WorldRecords(**{
+                    "code": self.cur_tournament.maps[t_cat]["code"],
+                    "level": self.cur_tournament.maps[t_cat]["level"],
+                    "record": record.record,
+                    "name": record.name,
+                    "posted_by": record.posted_by,
+                    "url": record.attachment_url,
+                    "verified": True,
+                })
+                await new_record.commit()
 
     async def _export_records(self, records, category, category_name):
         await self.export_channel.send(f"***{10 * '-'} {category_name} {10 * '-'}***")
