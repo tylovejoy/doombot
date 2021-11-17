@@ -24,7 +24,6 @@ from utils.views import (
     ClearView,
     Confirm,
     BracketToggle,
-    MissionAnnounceView,
     MissionCategories,
     RemoveMissions,
     ScheduleView,
