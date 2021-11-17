@@ -240,11 +240,20 @@ class XP(commands.Cog, name="XP"):
     async def _change_rank(self, ctx, user: discord.Member, category, rank):
         if not user:
             await ctx.send("User doesn't exist.", delete_after=10)
+        category = category.lower()
+        rank = rank.lower()
+        aliases = {
+            "time attack": "ta",
+            "mildcore": "mc",
+            "hardcore": "hc",
+            "bonus": "bo"
+        }
+        rank = aliases.get(rank, rank)
         t_cat = ["ta", "mc", "hc", "bo"]
         if category not in t_cat:
             await ctx.send(f"Category must be \"{', '.join(t_cat)}\"", delete_after=10)
         ranks = ["unranked", "gold", "diamond", "grandmaster"]
-        if rank.lower() not in ranks:
+        if rank not in ranks:
             await ctx.send(f"Rank must be \"{', '.join(ranks)}\"", delete_after=10)
 
         search = await ExperiencePoints().find_one({"user_id": user.id})
