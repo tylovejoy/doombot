@@ -1461,7 +1461,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
         # Make confirmation
         # MAke mention dropdown
         view = ScheduleView(ctx.author)
-        confirmation_msg = await ctx.channel.send(embed=embed, view=view)
+        confirmation_msg = await ctx.channel.send("Respond with a scheduled time if option is selected.", embed=embed, view=view)
         await view.wait()
 
         def check(message: discord.Message):
