@@ -675,8 +675,10 @@ class Tournament2(commands.Cog, name="Tournament2"):
             user = discord.utils.find(
                 lambda m: m.id == record.posted_by, self.guild.members
             )
+            name = (await ExperiencePoints().find_one({"user_id": record.posted_by})).alias
+
             embed.add_field(
-                name=f"#{count + 1} - {user.name if user else 'Unknown'}",
+                name=f"#{count + 1} - {name if name else user.name if user else 'Unknown'}",
                 value=f"> Record: {display_record(record.record)}\n",
                 inline=False,
             )
@@ -839,10 +841,11 @@ class Tournament2(commands.Cog, name="Tournament2"):
             author_record.attachment_url = ctx.message.attachments[0].url
             records[pos] = author_record
         else:
+            name = (await ExperiencePoints().find_one({"user_id": ctx.author.id})).alias
             author_record = TournamentRecordData(
                 **{
                     "posted_by": ctx.author.id,
-                    "name": ctx.author.name,
+                    "name": name if name else ctx.author.name,
                     "record": record_in_seconds,
                     "attachment_url": ctx.message.attachments[0].url,
                 }
@@ -852,7 +855,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
         embed = doom_embed(title="New Submission")
         # Verification embed for user.
         embed.add_field(
-            name=f"Name: {discord.utils.find(lambda m: m.id == author_record.posted_by, ctx.guild.members).name}",
+            name=f"Name: {author_record.name}",
             value=f"> Record: {display_record(record_in_seconds)}\n",
             inline=False,
         )
@@ -920,7 +923,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
 
         embed = doom_embed(title="Submission deletion")
         embed.add_field(
-            name=f"Name: {discord.utils.find(lambda m: m.id == records[pos].posted_by, ctx.guild.members).name}",
+            name=f"Name: {author_record.name}",
             value=(f"> Record: {display_record(records[pos].record)}\n"),
             inline=False,
         )
@@ -1036,7 +1039,7 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 "If you edit the start time, the end time will automatically be changed to stay the same length as initally set."
             ),
         )
-        view = StartEndToggle(ctx.author)
+        view = StartEndToggle(ctx.autzhor)
         wizard = await ctx.send(embed=embed, view=view, delete_after=30)
         response = await self.bot.wait_for("message", check=check, timeout=30)
 
