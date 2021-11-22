@@ -545,5 +545,3 @@ class RemoveMissions(discord.ui.View):
         self, select: discord.ui.Select, interaction: discord.Interaction
     ):
         self.category = select.values
-
-

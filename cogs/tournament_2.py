@@ -609,15 +609,17 @@ class Tournament2(commands.Cog, name="Tournament2"):
     async def _submit_records_to_bot(self):
         for t_cat in ["ta", "mc", "hc", "bo"]:
             for record in self.cur_tournament.records[t_cat]:
-                new_record = WorldRecords(**{
-                    "code": self.cur_tournament.maps[t_cat]["code"],
-                    "level": self.cur_tournament.maps[t_cat]["level"],
-                    "record": record.record,
-                    "name": record.name,
-                    "posted_by": record.posted_by,
-                    "url": record.attachment_url,
-                    "verified": True,
-                })
+                new_record = WorldRecords(
+                    **{
+                        "code": self.cur_tournament.maps[t_cat]["code"],
+                        "level": self.cur_tournament.maps[t_cat]["level"],
+                        "record": record.record,
+                        "name": record.name,
+                        "posted_by": record.posted_by,
+                        "url": record.attachment_url,
+                        "verified": True,
+                    }
+                )
                 await new_record.commit()
 
     async def _export_records(self, records, category, category_name):
@@ -675,7 +677,9 @@ class Tournament2(commands.Cog, name="Tournament2"):
             user = discord.utils.find(
                 lambda m: m.id == record.posted_by, self.guild.members
             )
-            name = (await ExperiencePoints().find_one({"user_id": record.posted_by})).alias
+            name = (
+                await ExperiencePoints().find_one({"user_id": record.posted_by})
+            ).alias
 
             embed.add_field(
                 name=f"#{count + 1} - {name if name else user.name if user else 'Unknown'}",
@@ -1463,17 +1467,21 @@ class Tournament2(commands.Cog, name="Tournament2"):
         # Make confirmation
         # MAke mention dropdown
         view = ScheduleView(ctx.author)
-        confirmation_msg = await ctx.channel.send("Respond with a scheduled time if option is selected.", embed=embed, view=view)
+        confirmation_msg = await ctx.channel.send(
+            "Respond with a scheduled time if option is selected.",
+            embed=embed,
+            view=view,
+        )
         await view.wait()
 
         def check(message: discord.Message):
             return message.channel == ctx.channel and message.author == ctx.author
-        
+
         if view.value:
             mentions = ""
             for m in view.mentions:
                 mentions += self._mentions(m)
-            
+
             if not view.schedule:
                 await confirmation_msg.edit(
                     content="Confirmed.",
@@ -1482,24 +1490,25 @@ class Tournament2(commands.Cog, name="Tournament2"):
                 )
                 await self.info_channel.send(mentions, embed=embed)
                 return
-            
+
             response = await self.bot.wait_for("message", check=check, timeout=120)
             schedule = dateparser.parse(
                 response, settings={"PREFER_DATES_FROM": "future"}
             )
             unix_schedule = str(time.mktime(schedule.timetuple()))[:-2]
-            announcement = AnnoucementSchedule(**{
-                "embed": embed.to_dict(),
-                "mentions": mentions,
-                "schedule": schedule,
-            })
+            announcement = AnnoucementSchedule(
+                **{
+                    "embed": embed.to_dict(),
+                    "mentions": mentions,
+                    "schedule": schedule,
+                }
+            )
             await announcement.commit()
             await confirmation_msg.edit(
                 content=f"Scheduled for <t:{unix_schedule}:R> - <t:{unix_schedule}:F>",
                 delete_after=15,
                 view=view,
             )
-
 
         elif not view.value:
             await confirmation_msg.edit(

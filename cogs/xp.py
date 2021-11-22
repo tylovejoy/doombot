@@ -57,7 +57,9 @@ class XP(commands.Cog, name="XP"):
 
     def __init__(self, bot):
         self.bot = bot
-        self.org_role = self.bot.get_guild(constants_bot.GUILD_ID).get_role(constants_bot.ORG_ROLE_ID)
+        self.org_role = self.bot.get_guild(constants_bot.GUILD_ID).get_role(
+            constants_bot.ORG_ROLE_ID
+        )
 
     async def cog_check(self, ctx):
         """Check if commands are used in rank channel."""
@@ -144,7 +146,7 @@ class XP(commands.Cog, name="XP"):
         img.paste(bo_logo, bo_box_xy, bo_logo)
 
         font_file = "data/fonts/segoeui.ttf"
-        font2_file ="data/fonts/avenir.otf"
+        font2_file = "data/fonts/avenir.otf"
         # Username/Discriminator
         name_font = ImageFont.truetype(font2_file, 50)
         name_pos = x // 2 - d.textlength(name, font=name_font) // 2 + old_x
@@ -246,7 +248,7 @@ class XP(commands.Cog, name="XP"):
             "time attack": "ta",
             "mildcore": "mc",
             "hardcore": "hc",
-            "bonus": "bo"
+            "bonus": "bo",
         }
         rank = aliases.get(rank, rank)
         t_cat = ["ta", "mc", "hc", "bo"]
