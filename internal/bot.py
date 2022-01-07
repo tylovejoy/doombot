@@ -45,15 +45,16 @@ class Bot(commands.Bot):
         )  # Ensure that on_ready has completed and finished printing
         cogs = [x.stem for x in Path("cogs").glob("*.py")]
         logger.info("Loading extensions...")
-        # for extension in cogs:
-        #     try:
-        #         self.load_extension(f"cogs.{extension}")
-        #         logger.info(f"Loading {extension}...")
-        #     except Exception as e:
-        #         error = f"{extension}\n {type(e).__name__} : {e}"
-        #         logger.info(f"failed to load extension {error}")
-        self.load_extension("cogs.tournament_2")
-        self.load_extension("cogs.xp")
+        for extension in cogs:
+            if extension == "tournament":
+                continue
+            try:
+                self.load_extension(f"cogs.{extension}")
+                logger.info(f"Loading {extension}...")
+            except Exception as e:
+                error = f"{extension}\n {type(e).__name__} : {e}"
+                logger.info(f"failed to load extension {error}")
+
         logger.info("Extensions loaded.")
 
     async def on_ready(self):
