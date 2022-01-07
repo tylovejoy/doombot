@@ -264,7 +264,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
             search = await WorldRecords.find_one(
                 {
                     "code": map_code,
-                    "level": re.compile(re.escape(level), re.IGNORECASE),
+                    "level": re.compile(f"^{re.escape(level)}$", re.IGNORECASE),
                     "$or": [{"posted_by": name_id}, {"name": name}],
                 }
             )
@@ -272,7 +272,7 @@ class SubmitPersonalBest(commands.Cog, name="Personal best submission/deletion")
             search = await WorldRecords.find_one(
                 {
                     "code": map_code,
-                    "level": re.compile(re.escape(level), re.IGNORECASE),
+                    "level": re.compile(f"^{re.escape(level)}$", re.IGNORECASE),
                     "name": name,
                 }
             )
